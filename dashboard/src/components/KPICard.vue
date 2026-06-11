@@ -61,12 +61,12 @@ defineProps<{
   position: relative;
 
   width: 100%;
-  height: 150px;
+  height: 100%;
 
   display: flex;
   align-items: center;
 
-  padding: 0 40px;
+  padding: 0 clamp(16px, 2vw, 40px);
 
   box-sizing: border-box;
 
@@ -180,7 +180,7 @@ defineProps<{
 }
 
 .label {
-  color: #dff8ff;
+  color: #94A3B8;
 
   font-size: 16px;
   font-weight: 500;
@@ -201,9 +201,8 @@ defineProps<{
   line-height: 1;
 
   font-family:
-    DIN,
-    "DIN Alternate",
-    "Bahnschrift",
+    "Exo 2",
+    "Microsoft YaHei",
     sans-serif;
 
   text-shadow:
@@ -220,7 +219,7 @@ defineProps<{
 }
 
 .change-label {
-  color: #8dbfd6;
+  color: #94A3B8;
 
   font-size: 16px;
 }
@@ -238,16 +237,16 @@ defineProps<{
 }
 
 .change-value.up {
-  color: #ff5959;
+  color: #22C55E;
 
   text-shadow:
-    0 0 8px rgba(255,89,89,.4);
+    0 0 8px rgba(34,197,94,.4);
 }
 
 .change-value.down {
-  color: #32d96b;
+  color: #EF4444;
 
   text-shadow:
-    0 0 8px rgba(50,217,107,.4);
+    0 0 8px rgba(239,68,68,.4);
 }
 </style>

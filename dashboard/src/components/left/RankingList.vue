@@ -2,10 +2,15 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import DashboardPanel from '../DashboardPanel.vue'
+import { useReducedMotion } from '../../composables/useReducedMotion'
+import { useDetailModal } from '../../composables/useDetailModal'
 
 const chartRef = ref<HTMLDivElement>()
 
 let chartInstance: echarts.ECharts | null = null
+
+const { prefersReducedMotion } = useReducedMotion()
+const { openRecords } = useDetailModal()
 
 const items = [
   { name: '占道经营', count: 49906 },
@@ -22,6 +27,8 @@ onMounted(() => {
 
   const option: echarts.EChartsOption = {
     backgroundColor: 'transparent',
+
+    animation: !prefersReducedMotion.value,
 
     grid: {
       left: '18%',
@@ -50,7 +57,7 @@ onMounted(() => {
       },
 
       axisLabel: {
-        color: '#d8f5ff',
+        color: '#94A3B8',
         fontSize: 14
       }
     },
@@ -102,6 +109,13 @@ onMounted(() => {
 
   chartInstance.setOption(option)
 
+  chartInstance.on('click', (params) => {
+    openRecords({
+      title: `详情 - ${params.name}`,
+      filterType: params.name as string
+    })
+  })
+
   window.addEventListener('resize', resize)
 })
 
@@ -136,7 +150,7 @@ onUnmounted(() => {
 }
 
 .total-text {
-  color: #8fdfff;
+  color: #94A3B8;
 
   font-size: 14px;
 

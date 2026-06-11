@@ -2,42 +2,43 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import DashboardPanel from '../DashboardPanel.vue'
+import { useReducedMotion } from '../../composables/useReducedMotion'
+import { useDetailModal } from '../../composables/useDetailModal'
 
 const chartRef = ref<HTMLDivElement>()
 
 let chartInstance: echarts.ECharts | null = null
 
-const dates = [
-  '05-21',
-  '05-22',
-  '05-23',
-  '05-24',
-  '05-25',
-  '05-26',
-  '05-27'
-]
+const { prefersReducedMotion } = useReducedMotion()
+const { openRecords } = useDetailModal()
+
+// 动态生成近7天日期（MM-dd）
+function formatDate(d: Date): string {
+  return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function last7Days(): string[] {
+  const result: string[] = []
+  const now = new Date()
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i)
+    result.push(formatDate(d))
+  }
+  return result
+}
+
+const dates = last7Days()
+
+// 随机数据生成
+function randData(base: number, range: number): number[] {
+  return Array.from({ length: 7 }, () => Math.round(base + Math.random() * range))
+}
 
 const legends = [
-  {
-    name: '小街面商',
-    color: '#1e80ff',
-    data: [850, 1100, 980, 1350, 1100, 1280, 1150]
-  },
-  {
-    name: '垃圾暴露',
-    color: '#24d8e8',
-    data: [520, 600, 550, 720, 600, 680, 630]
-  },
-  {
-    name: '车辆违停',
-    color: '#ffb300',
-    data: [280, 320, 300, 380, 330, 350, 340]
-  },
-  {
-    name: '人居环境',
-    color: '#7c5cff',
-    data: [420, 480, 450, 520, 490, 510, 500]
-  }
+  { name: '小街面商', color: '#1e80ff', data: randData(800, 500) },
+  { name: '垃圾暴露', color: '#24d8e8', data: randData(500, 250) },
+  { name: '车辆违停', color: '#ffb300', data: randData(250, 150) },
+  { name: '人居环境', color: '#7c5cff', data: randData(400, 150) }
 ]
 
 onMounted(() => {
@@ -47,6 +48,8 @@ onMounted(() => {
 
   const option: echarts.EChartsOption = {
     backgroundColor: 'transparent',
+
+    animation: !prefersReducedMotion.value,
 
     tooltip: {
       trigger: 'axis',
@@ -65,7 +68,7 @@ onMounted(() => {
       itemHeight: 8,
 
       textStyle: {
-        color: '#d9f8ff',
+        color: '#F8FAFC',
         fontSize: 12
       },
 
@@ -97,7 +100,7 @@ onMounted(() => {
       },
 
       axisLabel: {
-        color: '#9fdfff',
+        color: '#94A3B8',
         fontSize: 12
       }
     },
@@ -116,7 +119,7 @@ onMounted(() => {
       },
 
       axisLabel: {
-        color: '#9fdfff',
+        color: '#94A3B8',
         fontSize: 12
       },
 
@@ -172,6 +175,20 @@ onMounted(() => {
   }
 
   chartInstance.setOption(option)
+
+  // 点击图表区域，根据 x 坐标判断点击的是哪一天
+  chartInstance.getZr().on('click', (params: { offsetX: number; offsetY: number }) => {
+    const pointInGrid = chartInstance!.convertFromPixel('grid', [params.offsetX, params.offsetY])
+    if (!pointInGrid) return
+
+    const idx = Math.round(pointInGrid[0])
+    if (idx < 0 || idx >= dates.length) return
+
+    openRecords({
+      title: `详情 - ${dates[idx]} 全部事件`,
+      filterDate: dates[idx]
+    })
+  })
 
   window.addEventListener('resize', resize)
 })

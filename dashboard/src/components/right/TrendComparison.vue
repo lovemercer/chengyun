@@ -2,10 +2,15 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import DashboardPanel from '../DashboardPanel.vue'
+import { useReducedMotion } from '../../composables/useReducedMotion'
+import { useDetailModal } from '../../composables/useDetailModal'
 
 const chartRef = ref<HTMLDivElement>()
 
 let chartInstance: echarts.ECharts | null = null
+
+const { prefersReducedMotion } = useReducedMotion()
+const { openCompare } = useDetailModal()
 
 const days = [
   '周一',
@@ -17,7 +22,15 @@ const days = [
   '周日'
 ]
 
-const thisWeek = [420, 580, 510, 460, 390, 560, 630]
+// 当前星期几（0=周一 … 6=周日）
+const today = new Date()
+const todayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1
+
+// 本周：已过的天有数据，未来的天显示 0
+const thisWeekRaw = [420, 580, 510, 460, 390, 560, 630]
+const thisWeek = thisWeekRaw.map((v, i) => i <= todayIdx ? v : 0)
+
+// 上周全部有数据
 const lastWeek = [560, 460, 710, 610, 360, 630, 510]
 
 onMounted(() => {
@@ -27,6 +40,8 @@ onMounted(() => {
 
   const option: echarts.EChartsOption = {
     backgroundColor: 'transparent',
+
+    animation: !prefersReducedMotion.value,
 
     tooltip: {
       trigger: 'axis',
@@ -54,7 +69,7 @@ onMounted(() => {
       itemHeight: 8,
 
       textStyle: {
-        color: '#d9f8ff',
+        color: '#F8FAFC',
         fontSize: 12
       },
 
@@ -84,7 +99,7 @@ onMounted(() => {
       },
 
       axisLabel: {
-        color: '#9fdfff',
+        color: '#94A3B8',
         fontSize: 12
       }
     },
@@ -103,7 +118,7 @@ onMounted(() => {
       },
 
       axisLabel: {
-        color: '#9fdfff',
+        color: '#94A3B8',
         fontSize: 12
       },
 
@@ -136,11 +151,11 @@ onMounted(() => {
             [
               {
                 offset: 0,
-                color: '#1e80ff'
+                color: '#0077ff'
               },
               {
                 offset: 1,
-                color: '#39d5ff'
+                color: '#00e5ff'
               }
             ]
           )
@@ -167,11 +182,11 @@ onMounted(() => {
             [
               {
                 offset: 0,
-                color: '#7c5cff'
+                color: '#2a4a6b'
               },
               {
                 offset: 1,
-                color: '#b794ff'
+                color: '#3d6a8a'
               }
             ]
           )
@@ -181,6 +196,15 @@ onMounted(() => {
   }
 
   chartInstance.setOption(option)
+
+  chartInstance.on('click', (params) => {
+    const dayIndex = days.indexOf(params.name as string)
+    openCompare({
+      title: `详情 - ${params.name}`,
+      left: { title: `本周 ${params.name}`, filterPeriod: 'this_week', filterWeekday: dayIndex },
+      right: { title: `上周 ${params.name}`, filterPeriod: 'last_week', filterWeekday: dayIndex }
+    })
+  })
 
   window.addEventListener('resize', resize)
 })

@@ -2,10 +2,15 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import DashboardPanel from '../DashboardPanel.vue'
+import { useReducedMotion } from '../../composables/useReducedMotion'
+import { useDetailModal } from '../../composables/useDetailModal'
 
 const chartRef = ref<HTMLDivElement>()
 
 let chartInstance: echarts.ECharts | null = null
+
+const { prefersReducedMotion } = useReducedMotion()
+const { openRecords } = useDetailModal()
 
 const total = 128568
 
@@ -34,6 +39,8 @@ onMounted(() => {
 
   const option: echarts.EChartsOption = {
     backgroundColor: 'transparent',
+
+    animation: !prefersReducedMotion.value,
 
     tooltip: {
       trigger: 'item',
@@ -106,6 +113,13 @@ onMounted(() => {
   }
 
   chartInstance.setOption(option)
+
+  chartInstance.on('click', (params) => {
+    openRecords({
+      title: `详情 - ${params.name}`,
+      filterType: params.name as string
+    })
+  })
 
   window.addEventListener('resize', handleResize)
 })
@@ -210,7 +224,7 @@ onUnmounted(() => {
 
 /* 名称 */
 .legend-name {
-  color: #e8f8ff;
+  color: #F8FAFC;
 
   font-size: 14px;
 
@@ -219,7 +233,7 @@ onUnmounted(() => {
 
 /* 百分比 */
 .legend-value {
-  color: #ffffff;
+  color: #F8FAFC;
 
   font-size: 15px;
 

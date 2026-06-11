@@ -11,7 +11,9 @@
         <div class="panel-header">
 
             <div class="title-wrap">
-                <span class="panel-arrow">▶</span>
+                <svg class="panel-arrow" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <path d="M4 2l8 6-8 6V2z" />
+                </svg>
                 <span class="panel-title">
                     {{ title }}
                 </span>
@@ -102,15 +104,16 @@ defineProps<{
 }
 
 .panel-arrow {
-    color: #00e5ff;
+    width: 14px;
+    height: 14px;
 
-    font-size: 13px;
+    color: #00e5ff;
 
     margin-right: 6px;
 
-    text-shadow:
-        0 0 6px #00e5ff,
-        0 0 14px #00e5ff;
+    flex-shrink: 0;
+
+    filter: drop-shadow(0 0 4px #00e5ff);
 }
 
 .panel-title {

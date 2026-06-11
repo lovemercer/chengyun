@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import DashboardPanel from '../DashboardPanel.vue'
+import { useDetailModal } from '../../composables/useDetailModal'
+
+const { openCompare } = useDetailModal()
 
 const rows = [
   {
@@ -7,21 +10,27 @@ const rows = [
     v1: 236,
     v2: 257,
     pct: 6.17,
-    dir: 'down'
+    dir: 'down',
+    left: { title: '今日', filterPeriod: 'today' },
+    right: { title: '昨日', filterPeriod: 'yesterday' }
   },
   {
     label: '本周 vs 上周',
     v1: 1568,
     v2: 1402,
     pct: 11.83,
-    dir: 'up'
+    dir: 'up',
+    left: { title: '本周', filterPeriod: 'this_week' },
+    right: { title: '上周', filterPeriod: 'last_week' }
   },
   {
     label: '本月 vs 上月',
     v1: 6821,
     v2: 7152,
     pct: 4.66,
-    dir: 'down'
+    dir: 'down',
+    left: { title: '本月', filterPeriod: 'this_month' },
+    right: { title: '上月', filterPeriod: 'last_month' }
   }
 ]
 </script>
@@ -31,7 +40,12 @@ const rows = [
 
     <div class="compare-grid">
 
-      <div v-for="item in rows" :key="item.label" class="compare-card">
+      <div
+        v-for="item in rows"
+        :key="item.label"
+        class="compare-card"
+        @click="openCompare({ title: `详情 - ${item.label}`, left: item.left, right: item.right })"
+      >
         <div class="compare-title">
           {{ item.label }}
         </div>
@@ -86,6 +100,17 @@ const rows = [
       rgba(0, 20, 50, .10));
 
   overflow: hidden;
+
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+
+.compare-card:hover {
+  border-color: rgba(0, 229, 255, .5);
+  background:
+    linear-gradient(180deg,
+      rgba(0, 40, 90, .35),
+      rgba(0, 20, 50, .20));
 }
 
 /* .compare-card::before {
@@ -103,7 +128,7 @@ const rows = [
 } */
 
 .compare-title {
-  color: #dff7ff;
+  color: #94A3B8;
 
   font-size: 20px;
 
@@ -124,7 +149,7 @@ const rows = [
 
   font-size: 16px;
 
-  color: #8ecfff;
+  color: #94A3B8;
 
   font-weight: 400;
 }
@@ -136,10 +161,10 @@ const rows = [
 }
 
 .compare-rate.up {
-  color: #ff5252;
+  color: #22C55E;
 }
 
 .compare-rate.down {
-  color: #00ff66;
+  color: #EF4444;
 }
 </style>
