@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import DashboardPanel from '../DashboardPanel.vue'
+import { useEventQuery } from '@/composables/useEventQuery'
 
 interface Capture {
   id: number
@@ -9,80 +10,19 @@ interface Capture {
   location: string
 }
 
-const captures = ref<Capture[]>([
-  {
-    id: 1,
-    time: '22:23:31',
-    type: '占道经营',
-    location: '水木大桥路口'
-  },
-  {
-    id: 2,
-    time: '22:23:25',
-    type: '人员聚集',
-    location: '喜悦广场'
-  },
-  {
-    id: 3,
-    time: '22:23:18',
-    type: '乱堆暴露',
-    location: '名城·星耀北门'
-  },
-  {
-    id: 4,
-    time: '22:23:05',
-    type: '乱贴广告',
-    location: '真如大明城'
-  },
-  {
-    id: 5,
-    time: '22:22:58',
-    type: '垃圾暴露',
-    location: '东关大街'
-  }
-])
+const { fetchLatestCaptures } = useEventQuery()
 
-const types = [
-  '占道经营',
-  '人员聚集',
-  '乱堆暴露',
-  '乱贴广告',
-  '垃圾暴露',
-  '车辆违停'
-]
-
-const locations = [
-  '水木大桥路口',
-  '喜悦广场',
-  '名城·星耀北门',
-  '真如大明城',
-  '东关大街',
-  '昆仑路',
-  '建国路'
-]
+const captures = ref<Capture[]>([])
 
 let timer: ReturnType<typeof setInterval>
 
-onMounted(() => {
-  timer = setInterval(() => {
-    const now = new Date()
+async function refresh() {
+  captures.value = await fetchLatestCaptures(6)
+}
 
-    const time =
-      `${String(now.getHours()).padStart(2, '0')}:` +
-      `${String(now.getMinutes()).padStart(2, '0')}:` +
-      `${String(now.getSeconds()).padStart(2, '0')}`
-
-    captures.value.unshift({
-      id: Date.now(),
-      time,
-      type: types[Math.floor(Math.random() * types.length)],
-      location: locations[Math.floor(Math.random() * locations.length)]
-    })
-
-    if (captures.value.length > 6) {
-      captures.value.pop()
-    }
-  }, 5000)
+onMounted(async () => {
+  await refresh()
+  timer = setInterval(refresh, 5000)
 })
 
 onUnmounted(() => {

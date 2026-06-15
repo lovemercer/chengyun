@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { useDetailModal } from '../composables/useDetailModal'
-import { getDetailRecords } from '../data/mockDetail'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { useDetailModal } from '@/composables/useDetailModal'
+import { useEventQuery } from '@/composables/useEventQuery'
 
 const {
   visible, mode, title,
@@ -10,45 +10,105 @@ const {
   closeDetail
 } = useDetailModal()
 
+const { fetchDetailRecords } = useEventQuery()
+
+interface EventRecord {
+  id: number
+  time: string
+  dateStr: string
+  type: string
+  location: string
+  detail: string
+}
+
 const pageSize = 10
 const leftPage = ref(1)
 const rightPage = ref(1)
 
 // Records mode
-const records = computed(() => getDetailRecords({
-  filterType: filterType.value || undefined,
-  filterPeriod: filterPeriod.value || undefined,
-  filterDate: filterDate.value || undefined
-}))
-const totalPages = computed(() => Math.max(1, Math.ceil(records.value.length / pageSize)))
-const pagedRecords = computed(() => {
-  const start = (leftPage.value - 1) * pageSize
-  return records.value.slice(start, start + pageSize)
+const recordTotal = ref(0)
+const pagedRecords = ref<EventRecord[]>([])
+
+// Compare mode
+const leftTotal = ref(0)
+const leftPaged = ref<EventRecord[]>([])
+const rightTotal = ref(0)
+const rightPaged = ref<EventRecord[]>([])
+
+async function loadRecords() {
+  const filter: {
+    filterType?: string
+    filterPeriod?: string
+    filterDate?: string
+  } = {}
+  if (filterType.value) filter.filterType = filterType.value
+  if (filterPeriod.value) filter.filterPeriod = filterPeriod.value
+  if (filterDate.value) filter.filterDate = filterDate.value
+
+  const res = await fetchDetailRecords({
+    ...filter,
+    pageNo: leftPage.value,
+    pageSize,
+  })
+  recordTotal.value = res.total
+  pagedRecords.value = res.list as EventRecord[]
+}
+
+async function loadLeft() {
+  const res = await fetchDetailRecords({
+    filterType: leftSide.value.filterType,
+    filterPeriod: leftSide.value.filterPeriod,
+    pageNo: leftPage.value,
+    pageSize,
+  })
+  leftTotal.value = res.total
+  leftPaged.value = res.list as EventRecord[]
+}
+
+async function loadRight() {
+  const res = await fetchDetailRecords({
+    filterType: rightSide.value.filterType,
+    filterPeriod: rightSide.value.filterPeriod,
+    pageNo: rightPage.value,
+    pageSize,
+  })
+  rightTotal.value = res.total
+  rightPaged.value = res.list as EventRecord[]
+}
+
+async function loadAll() {
+  if (mode.value === 'records') {
+    await loadRecords()
+  } else if (mode.value === 'compare') {
+    await Promise.all([loadLeft(), loadRight()])
+  }
+}
+
+// 监听 visible 变化（打开弹窗时加载）
+watch(visible, async (v) => {
+  if (v) {
+    leftPage.value = 1
+    rightPage.value = 1
+    await loadAll()
+  }
 })
 
-// Compare mode - left
-const leftRecords = computed(() => getDetailRecords({
-  filterType: leftSide.value.filterType,
-  filterPeriod: leftSide.value.filterPeriod,
-  filterWeekday: leftSide.value.filterWeekday
-}))
-const leftTotalPages = computed(() => Math.max(1, Math.ceil(leftRecords.value.length / pageSize)))
-const leftPaged = computed(() => {
-  const start = (leftPage.value - 1) * pageSize
-  return leftRecords.value.slice(start, start + pageSize)
+// 监听分页变化
+watch(leftPage, () => {
+  if (mode.value === 'records') loadRecords()
+  else loadLeft()
+})
+watch(rightPage, () => {
+  if (mode.value === 'compare') loadRight()
 })
 
-// Compare mode - right
-const rightRecords = computed(() => getDetailRecords({
-  filterType: rightSide.value.filterType,
-  filterPeriod: rightSide.value.filterPeriod,
-  filterWeekday: rightSide.value.filterWeekday
-}))
-const rightTotalPages = computed(() => Math.max(1, Math.ceil(rightRecords.value.length / pageSize)))
-const rightPaged = computed(() => {
-  const start = (rightPage.value - 1) * pageSize
-  return rightRecords.value.slice(start, start + pageSize)
-})
+const recordTotalPages = ref(0)
+const leftTotalPages = ref(0)
+const rightTotalPages = ref(0)
+
+watch(recordTotal, (t) => { recordTotalPages.value = Math.max(1, Math.ceil(t / pageSize)) })
+watch(leftTotal, (t) => { leftTotalPages.value = Math.max(1, Math.ceil(t / pageSize)) })
+watch(rightTotal, (t) => { rightTotalPages.value = Math.max(1, Math.ceil(t / pageSize)) })
 
 function getPageNumbers(current: number, total: number) {
   const pages: (number | '...')[] = []
@@ -65,17 +125,6 @@ function getPageNumbers(current: number, total: number) {
   }
   return pages
 }
-
-const recordPageNumbers = computed(() => getPageNumbers(leftPage.value, totalPages.value))
-const leftPageNumbers = computed(() => getPageNumbers(leftPage.value, leftTotalPages.value))
-const rightPageNumbers = computed(() => getPageNumbers(rightPage.value, rightTotalPages.value))
-
-watch(visible, (v) => {
-  if (v) {
-    leftPage.value = 1
-    rightPage.value = 1
-  }
-})
 
 function goToPage(page: number, side: 'left' | 'right' = 'left') {
   if (side === 'left') {
@@ -115,7 +164,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
           <!-- Records Mode -->
           <div v-if="mode === 'records'" class="modal-body">
             <div class="modal-info">
-              共 <strong>{{ records.length }}</strong> 条记录
+              共 <strong>{{ recordTotal }}</strong> 条记录
             </div>
 
             <table class="detail-table">
@@ -144,12 +193,12 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
             <div class="pagination">
               <button class="page-btn" :disabled="leftPage === 1" @click="goToPage(leftPage - 1)">上一页</button>
               <button
-                v-for="(p, i) in recordPageNumbers" :key="i"
+                v-for="(p, i) in getPageNumbers(leftPage, recordTotalPages)" :key="i"
                 class="page-btn" :class="{ active: p === leftPage, dots: p === '...' }"
                 :disabled="p === '...'"
                 @click="typeof p === 'number' && goToPage(p)"
               >{{ p }}</button>
-              <button class="page-btn" :disabled="leftPage === totalPages" @click="goToPage(leftPage + 1)">下一页</button>
+              <button class="page-btn" :disabled="leftPage === recordTotalPages" @click="goToPage(leftPage + 1)">下一页</button>
             </div>
           </div>
 
@@ -159,7 +208,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               <div class="compare-side">
                 <div class="side-header">
                   <span class="side-title">{{ leftSide.title }}</span>
-                  <span class="side-count">{{ leftRecords.length }} 条</span>
+                  <span class="side-count">{{ leftTotal }} 条</span>
                 </div>
 
                 <table class="detail-table">
@@ -189,7 +238,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               <div class="compare-side">
                 <div class="side-header">
                   <span class="side-title">{{ rightSide.title }}</span>
-                  <span class="side-count">{{ rightRecords.length }} 条</span>
+                  <span class="side-count">{{ rightTotal }} 条</span>
                 </div>
 
                 <table class="detail-table">
@@ -219,7 +268,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               <div class="pagination">
                 <button class="page-btn" :disabled="leftPage === 1" @click="goToPage(leftPage - 1, 'left')">上一页</button>
                 <button
-                  v-for="(p, i) in leftPageNumbers" :key="i"
+                  v-for="(p, i) in getPageNumbers(leftPage, leftTotalPages)" :key="i"
                   class="page-btn" :class="{ active: p === leftPage, dots: p === '...' }"
                   :disabled="p === '...'"
                   @click="typeof p === 'number' && goToPage(p, 'left')"
@@ -230,7 +279,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
               <div class="pagination">
                 <button class="page-btn" :disabled="rightPage === 1" @click="goToPage(rightPage - 1, 'right')">上一页</button>
                 <button
-                  v-for="(p, i) in rightPageNumbers" :key="i"
+                  v-for="(p, i) in getPageNumbers(rightPage, rightTotalPages)" :key="i"
                   class="page-btn" :class="{ active: p === rightPage, dots: p === '...' }"
                   :disabled="p === '...'"
                   @click="typeof p === 'number' && goToPage(p, 'right')"
