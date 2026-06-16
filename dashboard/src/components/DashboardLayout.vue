@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import HeaderBar from './HeaderBar.vue'
 import KPICard from './KPICard.vue'
 
@@ -10,6 +11,35 @@ import AreaDistribution from './right/AreaDistribution.vue'
 import TrendComparison from './right/TrendComparison.vue'
 import LatestCaptures from './right/LatestCaptures.vue'
 import DetailModal from './DetailModal.vue'
+
+import { useEventData } from '@/composables/useEventData'
+import { useEventQuery } from '@/composables/useEventQuery'
+
+const { init } = useEventData()
+const { fetchKpiStats } = useEventQuery()
+
+interface KpiItem {
+  label: string
+  value: string
+  change?: string
+  changeType?: 'up' | 'down'
+  changeLabel?: string
+}
+
+const kpis = ref<KpiItem[]>([])
+
+onMounted(async () => {
+  await init()
+  const stats = await fetchKpiStats()
+  kpis.value = [
+    { label: '事件总数 (累计)', value: stats.total, change: '12.6%', changeType: 'up', changeLabel: '较昨日' },
+    { label: '今日新增事件', value: stats.today, change: '8.3%', changeType: 'down', changeLabel: '较昨日' },
+    { label: '较昨日变化', value: stats.yesterdayChange, change: stats.yesterdayValue, changeType: 'down', changeLabel: '昨日' },
+    { label: '近一周事件数', value: stats.thisWeek, change: stats.thisWeekChange, changeType: 'up', changeLabel: '环比' },
+    { label: '近一月事件数', value: stats.thisMonth, change: stats.thisMonthChange, changeType: 'down', changeLabel: '环比' },
+    { label: '近一年事件数', value: stats.thisYear, change: stats.thisYearChange, changeType: 'up', changeLabel: '同比' },
+  ]
+})
 </script>
 
 <template>
@@ -23,83 +53,15 @@ import DetailModal from './DetailModal.vue'
     <!-- KPI -->
     <section class="kpi-grid">
 
-      <KPICard label="事件总数 (累计)" value="128,568" change="12.6%" change-type="up" change-label="较昨日">
-        <template #icon>
-          <svg viewBox="0 0 24 24" fill="none" class="kpi-svg" role="img" aria-label="事件总数图标">
-            <defs>
-              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#00e5ff" />
-                <stop offset="100%" stop-color="#0066ff" />
-              </linearGradient>
-            </defs>
-
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#grad1)" fill-opacity="0.25" stroke="#00e5ff"
-              stroke-width="1.5" />
-
-            <path d="M2 12L12 17L22 12" stroke="#00e5ff" stroke-width="1.5" />
-
-            <path d="M2 17L12 22L22 17" stroke="#00e5ff" stroke-width="1.5" />
-          </svg>
-        </template>
-      </KPICard>
-
-      <KPICard label="今日新增事件" value="236" change="8.3%" change-type="down" change-label="较昨日">
-        <template #icon>
-          <svg viewBox="0 0 24 24" fill="none" class="kpi-svg" role="img" aria-label="今日新增事件图标">
-            <rect x="3" y="3" width="18" height="18" rx="2" stroke="#00e5ff" stroke-width="1.5" />
-
-            <path d="M8 12L11 15L16 9" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" />
-          </svg>
-        </template>
-      </KPICard>
-
-      <KPICard label="较昨日变化" value="-8.3%" change="257" change-type="down" change-label="昨日">
-        <template #icon>
-          <svg viewBox="0 0 24 24" fill="none" class="kpi-svg green" role="img" aria-label="较昨日变化图标">
-            <path d="M22 7L13.5 15.5L8.5 10.5L2 17" stroke="#31d158" stroke-width="2.5" stroke-linecap="round" />
-
-            <path d="M22 7V13M22 7H16" stroke="#31d158" stroke-width="2.5" />
-          </svg>
-        </template>
-      </KPICard>
-
-      <KPICard label="近一周事件数" value="1,568" change="11.8%" change-type="up" change-label="环比">
-        <template #icon>
-          <svg viewBox="0 0 24 24" fill="none" class="kpi-svg" role="img" aria-label="近一周事件数图标">
-            <rect x="3" y="4" width="18" height="17" rx="2" stroke="#00e5ff" stroke-width="1.5" />
-
-            <path d="M3 10H21" stroke="#00e5ff" />
-            <path d="M8 2V6M16 2V6" stroke="#00e5ff" />
-          </svg>
-        </template>
-      </KPICard>
-
-      <KPICard label="近一月事件数" value="6,821" change="4.6%" change-type="down" change-label="环比">
-        <template #icon>
-          <svg viewBox="0 0 24 24" fill="none" class="kpi-svg" role="img" aria-label="近一月事件数图标">
-            <rect x="3" y="4" width="18" height="17" rx="2" stroke="#00e5ff" stroke-width="1.5" />
-
-            <circle cx="8" cy="13" r="1" fill="#00e5ff" />
-            <circle cx="12" cy="13" r="1" fill="#00e5ff" />
-            <circle cx="16" cy="13" r="1" fill="#00e5ff" />
-
-            <circle cx="8" cy="17" r="1" fill="#00e5ff" />
-            <circle cx="12" cy="17" r="1" fill="#00e5ff" />
-            <circle cx="16" cy="17" r="1" fill="#00e5ff" />
-          </svg>
-        </template>
-      </KPICard>
-
-      <KPICard label="近一年事件数" value="82,452" change="9.2%" change-type="up" change-label="同比">
-        <template #icon>
-          <svg viewBox="0 0 24 24" fill="none" class="kpi-svg purple" role="img" aria-label="近一年事件数图标">
-            <path d="M12 2L21 7V17L12 22L3 17V7L12 2Z" stroke="#818cf8" stroke-width="1.5" />
-
-            <path d="M12 12L21 7" stroke="#818cf8" />
-            <path d="M12 12L3 7" stroke="#818cf8" />
-          </svg>
-        </template>
-      </KPICard>
+      <KPICard
+        v-for="kpi in kpis"
+        :key="kpi.label"
+        :label="kpi.label"
+        :value="kpi.value"
+        :change="kpi.change"
+        :change-type="kpi.changeType"
+        :change-label="kpi.changeLabel"
+      />
 
     </section>
 

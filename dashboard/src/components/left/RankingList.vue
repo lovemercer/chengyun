@@ -2,8 +2,9 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import DashboardPanel from '../DashboardPanel.vue'
-import { useReducedMotion } from '../../composables/useReducedMotion'
-import { useDetailModal } from '../../composables/useDetailModal'
+import { useReducedMotion } from '@/composables/useReducedMotion'
+import { useDetailModal } from '@/composables/useDetailModal'
+import { useEventQuery } from '@/composables/useEventQuery'
 
 const chartRef = ref<HTMLDivElement>()
 
@@ -11,16 +12,21 @@ let chartInstance: echarts.ECharts | null = null
 
 const { prefersReducedMotion } = useReducedMotion()
 const { openRecords } = useDetailModal()
+const { fetchRanking } = useEventQuery()
 
-const items = [
-  { name: '占道经营', count: 49906 },
-  { name: '垃圾暴露', count: 20509 },
-  { name: '车辆违停', count: 15528 },
-  { name: '人居环境', count: 12654 },
-  { name: '乱贴广告', count: 10264 }
-]
+interface RankItem {
+  name: string
+  count: number
+}
 
-onMounted(() => {
+const items = ref<RankItem[]>([])
+const total = ref(0)
+
+onMounted(async () => {
+  const data = await fetchRanking(5)
+  items.value = data.items
+  total.value = data.total
+
   if (!chartRef.value) return
 
   chartInstance = echarts.init(chartRef.value)
@@ -46,7 +52,7 @@ onMounted(() => {
       type: 'category',
       inverse: true,
 
-      data: items.map(item => item.name),
+      data: items.value.map(item => item.name),
 
       axisLine: {
         show: false
@@ -68,7 +74,7 @@ onMounted(() => {
 
         barWidth: 10,
 
-        data: items.map(item => item.count),
+        data: items.value.map(item => item.count),
 
         itemStyle: {
           borderRadius: [0, 6, 6, 0],
@@ -134,7 +140,7 @@ onUnmounted(() => {
 
     <template #extra>
       <span class="total-text">
-        累计：128,568
+        累计：{{ total.toLocaleString() }}
       </span>
     </template>
 

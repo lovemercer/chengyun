@@ -2,8 +2,9 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import DashboardPanel from '../DashboardPanel.vue'
-import { useReducedMotion } from '../../composables/useReducedMotion'
-import { useDetailModal } from '../../composables/useDetailModal'
+import { useReducedMotion } from '@/composables/useReducedMotion'
+import { useDetailModal } from '@/composables/useDetailModal'
+import { useEventQuery } from '@/composables/useEventQuery'
 
 const chartRef = ref<HTMLDivElement>()
 
@@ -11,17 +12,15 @@ let chartInstance: echarts.ECharts | null = null
 
 const { prefersReducedMotion } = useReducedMotion()
 const { openRecords } = useDetailModal()
+const { fetchCategoryDistribution } = useEventQuery()
 
-const total = 128568
+interface CategoryItem {
+  name: string
+  value: number
+}
 
-const categories = [
-  { name: '小街面商', value: 48836, pct: '38.0%' },
-  { name: '垃圾暴露', value: 26999, pct: '21.0%' },
-  { name: '占道经营', value: 19285, pct: '15.0%' },
-  { name: '人居环境', value: 15428, pct: '12.0%' },
-  { name: '乱贴广告', value: 6428, pct: '5.0%' },
-  { name: '其他事件', value: 11592, pct: '9.0%' }
-]
+const total = ref(0)
+const categories = ref<CategoryItem[]>([])
 
 const colors = [
   '#2f7cff',
@@ -32,7 +31,11 @@ const colors = [
   '#9a68ff'
 ]
 
-onMounted(() => {
+onMounted(async () => {
+  const data = await fetchCategoryDistribution()
+  total.value = data.total
+  categories.value = data.categories
+
   if (!chartRef.value) return
 
   chartInstance = echarts.init(chartRef.value)
@@ -70,7 +73,7 @@ onMounted(() => {
         left: 'center',
         top: '52%',
         style: {
-          text: total.toLocaleString(),
+          text: total.value.toLocaleString(),
           textAlign: 'center' as const,
           fill: '#ffffff',
           fontSize: 26,
@@ -101,11 +104,11 @@ onMounted(() => {
           borderWidth: 0
         },
 
-        data: categories.map((item, index) => ({
+        data: categories.value.map((item, index) => ({
           value: item.value,
           name: item.name,
           itemStyle: {
-            color: colors[index]
+            color: colors[index % colors.length]
           }
         }))
       }
@@ -145,7 +148,7 @@ onUnmounted(() => {
         <div v-for="(item, index) in categories" :key="item.name" class="legend-row">
           <div class="legend-left">
 
-            <span class="legend-color" :style="{ backgroundColor: colors[index] }" />
+            <span class="legend-color" :style="{ backgroundColor: colors[index % colors.length] }" />
 
             <span class="legend-name">
               {{ item.name }}
@@ -154,7 +157,7 @@ onUnmounted(() => {
           </div>
 
           <span class="legend-value">
-            {{ item.pct }}
+            {{ total > 0 ? ((item.value / total) * 100).toFixed(1) + '%' : '0%' }}
           </span>
         </div>
 
@@ -219,7 +222,7 @@ onUnmounted(() => {
 
   border-radius: 3px;
 
-  
+
 }
 
 /* 名称 */

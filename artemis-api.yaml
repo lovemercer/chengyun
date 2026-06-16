@@ -1,0 +1,1558 @@
+---
+version: "3.6.9"
+provider:
+- pId: 10
+  pName: "eventlib-search"
+  serviceId: "eventlib_eventlib-search"
+  enableAutoAddressing: true
+  componentId: "eventlib"
+  componentServiceId: "eventlib-search"
+- pId: 9
+  pName: "eventlib-spi"
+  serviceId: "eventlib_eventlib-spi"
+  enableAutoAddressing: true
+  componentId: "eventlib"
+  componentServiceId: "eventlib-spi"
+group:
+- groupId: 1786987347582124032
+  groupName: "事件服务"
+  description: "提供事件服务"
+  parentId: 0
+  weight: 7
+  status: "ONLINE"
+- groupId: 1786987347913474048
+  groupName: "事件查询服务"
+  description: "事件查询服务"
+  parentId: 1786987347582124032
+  weight: 8
+  status: "ONLINE"
+api:
+- apiName: "全域事件库事件类型获取"
+  description: "获取事件库中所有的事件列表。可以指定条件为是否接入过事件上报任务。返回结果包含事件模型编码、事件模型名称\n请求参数"
+  apiGroupInfo:
+    groupId: 1786987347913474048
+  apiProviderInfo:
+    pId: 9
+  protocol: "HTTP"
+  path: "/api/v1/dataEvent/getAllEventBasicInfo"
+  httpMethod: "POST"
+  authenticationMode: "1"
+  backendServiceType: "HTTP"
+  backendurl: "/eventlib-spi/v1/dataEvent/getAllEventBasicInfo"
+  backendHttpMethod: "GET"
+  backendTimeout: 10000
+  inParms:
+  - oder: 0
+    paramName: "filterNoEventTask"
+    paramPos: "Query"
+    paramType: "Boolean"
+    nullable: true
+    defaultValue: "false"
+    demo: "true"
+    description: "过滤未接入任务事件，默认值为false，代表不过滤,如果filterNoEventTask参数输入除了true以外的，会自动全部\
+      转为false"
+    backendParam:
+      beParmName: "filterNoEventTask"
+      beParmPos: "Query"
+  beConsts: []
+  sysParms: []
+  response:
+    resType: "application/json"
+    resDemo: "{\n    \"code\": 0,\n    \"msg\": \"SUCCESS\",\n    \"data\": [\n  \
+      \      {\n            \"id\": 1,\n            \"eventTableIndexCode\": \"2bb71ba2-cafe-4469-a68b-653fee946943\"\
+      ,\n            \"name\": \"人脸视频分析事件\"\n        }\n    ]\n}"
+    resDesc: "successful operation"
+    model:
+      name: "Object"
+      type: "Object"
+      required: true
+      example: ""
+      hidden: false
+      children:
+      - name: "code"
+        type: "Number"
+        required: true
+        example: "0"
+        description: "返回码"
+        hidden: false
+        mappingName: "code"
+      - name: "msg"
+        type: "String"
+        required: true
+        example: "SUCCESS"
+        description: "消息"
+        hidden: false
+        mappingName: "msg"
+      - name: "data"
+        type: "Array"
+        required: true
+        example: ""
+        description: "数据"
+        hidden: false
+        mappingName: "data"
+        children:
+        - name: "data[0]"
+          type: "Object"
+          required: false
+          example: ""
+          hidden: false
+          mappingName: "data[0]"
+          children:
+          - name: "id"
+            type: "Number"
+            required: true
+            example: "1"
+            description: "自增id"
+            hidden: false
+            mappingName: "id"
+          - name: "eventTableIndexCode"
+            type: "String"
+            required: true
+            example: "2bb71ba2-cafe-4469-a68b-653fee946943"
+            description: "事件模型编码"
+            hidden: false
+            mappingName: "eventTableIndexCode"
+          - name: "name"
+            type: "String"
+            required: true
+            example: "人脸视频分析事件"
+            description: "事件模型名称"
+            hidden: false
+            mappingName: "name"
+  contentType: ""
+  minVersion: "1.2.100"
+  maxVersion: ""
+  weight: 0
+  status: "ONLINE"
+  extensionFilters: []
+- apiName: "全域事件库事件类型详细信息获取"
+  description: "通过事件模型编码，获取事件模型的详细信息，包括事件模型关联的事件上报任务、事件上报来源消息中间件、事件存储信息等\n请求参数"
+  apiGroupInfo:
+    groupId: 1786987347913474048
+  apiProviderInfo:
+    pId: 9
+  protocol: "HTTP"
+  path: "/api/v1/dataEvent/getEventDetailInfoByIds"
+  httpMethod: "POST"
+  authenticationMode: "1"
+  backendServiceType: "HTTP"
+  backendurl: "/eventlib-spi/v1/dataEvent/getEventDetailInfoByIds"
+  backendHttpMethod: "POST"
+  backendTimeout: 10000
+  inParms:
+  - paramName: "body"
+    paramPos: "Body"
+    paramType: "application/json"
+    nullable: true
+    model:
+      name: "Object"
+      type: "Object"
+      required: true
+      example: " "
+      hidden: false
+      mappingPosition: "Body"
+      children:
+      - name: "eventTableIndexCodes"
+        type: "Array"
+        required: true
+        example: " "
+        description: "事件模型编码列表"
+        hidden: false
+        mappingName: "eventTableIndexCodes"
+        mappingPosition: "Body"
+        children:
+        - name: "eventTableIndexCodes[0]"
+          type: "String"
+          required: true
+          example: "2bb71ba2-cafe-4469-a68b-653fee946943"
+          description: "事件模型编码"
+          hidden: false
+          mappingName: "eventTableIndexCodes[0]"
+          mappingPosition: "Body"
+      - name: "filterNoEventTask"
+        type: "Boolean"
+        required: false
+        example: "false"
+        description: "过滤未接入任务事件，默认值为false，代表不过滤"
+        hidden: false
+        mappingName: "filterNoEventTask"
+        mappingPosition: "Body"
+        defaultValue: "false"
+    demo: "{\n    \"eventTableIndexCodes\": [\n        \"2bb71ba2-cafe-4469-a68b-653fee946943\"\
+      \n    ],\n    \"filterNoEventTask\": false\n}"
+    backendParam:
+      beParmName: "body"
+      beParmPos: "Body"
+  beConsts: []
+  sysParms: []
+  response:
+    resType: "application/json"
+    resDemo: "{\n    \"code\": \"0\",\n    \"msg\": \"SUCCESS\",\n    \"data\": [\n\
+      \        {\n            \"id\": 3,\n            \"eventTableIndexCode\": \"\
+      2bb71ba2-cafe-4469-a68b-653fee946943\",\n            \"name\": \"人脸视频分析事件\"\
+      ,\n            \"esIndexName\": \"xface.video_snap\",\n            \"esAliasName\"\
+      : \"xsearch_face_snap_video\",\n            \"kafkaTopicName\": \"VIDEO_SNAP_IMAGE_INFO_TOPIC\"\
+      ,\n            \"rmqTopicName\": \"null\",\n            \"exchange\": \"null\"\
+      ,\n            \"routingKey\": \"null\",\n            \"connectionMode\": \"\
+      null\",\n            \"resourceInfos\": [\n                {\n             \
+      \       \"resourceIndexCode\": \"elasticsearch1\",\n                    \"resourceName\"\
+      : \"elasticsearch\",\n                    \"properties\": {}\n             \
+      \   }\n            ],\n            \"sceneInfos\": [\n                {\n  \
+      \                  \"sceneId\": \"c1b57ed0-e30d-4c16-8d6c-4c78ea9b7f23\",\n\
+      \                    \"sceneNameStrand\": \"通用行业@通用@通用\",\n                \
+      \    \"sceneIdStrand\": \"76036f76-de97-467b-9fcd-70b7fbace013@d5676686-c01d-4190-a5f9-c6e6d76bcd1f@c1b57ed0-e30d-4c16-8d6c-4c78ea9b7f23\"\
+      \n                }\n            ]\n        }\n    ]\n}"
+    resDesc: "successful operation"
+    model:
+      name: "Object"
+      type: "Object"
+      required: true
+      description: ""
+      hidden: false
+      mappingName: ""
+      children:
+      - name: "code"
+        type: "String"
+        required: false
+        example: "0"
+        description: "错误码"
+        hidden: false
+        mappingName: "code"
+      - name: "msg"
+        type: "String"
+        required: false
+        example: "SUCCESS"
+        description: "返回描述信息"
+        hidden: false
+        mappingName: "msg"
+      - name: "data"
+        type: "Array"
+        required: false
+        description: "返回数据封装"
+        hidden: false
+        mappingName: "data"
+        children:
+        - name: "data[0]"
+          type: "Object"
+          required: false
+          description: ""
+          hidden: false
+          mappingName: "data[0]"
+          children:
+          - name: "id"
+            type: "Number"
+            required: false
+            example: "3"
+            description: "自增id"
+            hidden: false
+            mappingName: "id"
+          - name: "eventTableIndexCode"
+            type: "String"
+            required: false
+            example: "2bb71ba2-cafe-4469-a68b-653fee946943"
+            description: "事件唯一id"
+            hidden: false
+            mappingName: "eventTableIndexCode"
+          - name: "name"
+            type: "String"
+            required: false
+            example: "人脸视频分析事件"
+            description: "事件名称"
+            hidden: false
+            mappingName: "name"
+          - name: "esIndexName"
+            type: "String"
+            required: false
+            example: "xface.video_snap"
+            description: "es索引名称"
+            hidden: false
+            mappingName: "esIndexName"
+          - name: "esAliasName"
+            type: "String"
+            required: false
+            example: "xsearch_face_snap_video"
+            description: "es索引别名"
+            hidden: false
+            mappingName: "esAliasName"
+          - name: "kafkaTopicName"
+            type: "String"
+            required: false
+            example: "VIDEO_SNAP_IMAGE_INFO_TOPIC"
+            description: "kafka topic名称"
+            hidden: false
+            mappingName: "kafkaTopicName"
+          - name: "rmqTopicName"
+            type: "String"
+            required: false
+            example: "null"
+            description: "rabbitmq topic 名称"
+            hidden: false
+            mappingName: "rmqTopicName"
+          - name: "exchange"
+            type: "String"
+            required: false
+            example: "null"
+            description: "rabbitmq exchange"
+            hidden: false
+            mappingName: "exchange"
+          - name: "routingKey"
+            type: "String"
+            required: false
+            example: "null"
+            description: "rabbitmq routingKey"
+            hidden: false
+            mappingName: "routingKey"
+          - name: "connectionMode"
+            type: "String"
+            required: false
+            example: "null"
+            description: "rabbitmq connectionMode"
+            hidden: false
+            mappingName: "connectionMode"
+          - name: "resourceInfos"
+            type: "Array"
+            required: false
+            description: "kafka、es、rabbitmq资源连接信息"
+            hidden: false
+            mappingName: "resourceInfos"
+            children:
+            - name: "resourceInfos[0]"
+              type: "Object"
+              required: false
+              description: ""
+              hidden: false
+              mappingName: "resourceInfos[0]"
+              children:
+              - name: "resourceIndexCode"
+                type: "String"
+                required: false
+                example: "elasticsearch1"
+                description: "资源内部编码"
+                hidden: false
+                mappingName: "resourceIndexCode"
+              - name: "resourceName"
+                type: "String"
+                required: false
+                example: "elasticsearch"
+                description: "资源名称：kafka/elasticsearch/rabbitmq"
+                hidden: false
+                mappingName: "resourceName"
+              - name: "properties"
+                type: "Object"
+                required: false
+                description: "连接地址配置信息"
+                hidden: false
+                mappingName: "properties"
+          - name: "sceneInfos"
+            type: "Array"
+            required: false
+            description: "连接地址配置信息"
+            hidden: false
+            mappingName: "sceneInfos"
+            children:
+            - name: "sceneInfos[0]"
+              type: "Object"
+              required: false
+              description: "场景列表"
+              hidden: false
+              mappingName: "sceneInfos[0]"
+              children:
+              - name: "sceneId"
+                type: "String"
+                required: false
+                example: "c1b57ed0-e30d-4c16-8d6c-4c78ea9b7f23"
+                description: "场景id"
+                hidden: false
+                mappingName: "sceneId"
+              - name: "sceneNameStrand"
+                type: "String"
+                required: false
+                example: "通用行业@通用@通用"
+                description: "场景名称连接"
+                hidden: false
+                mappingName: "sceneNameStrand"
+              - name: "sceneIdStrand"
+                type: "String"
+                required: false
+                example: "76036f76-de97-467b-9fcd-70b7fbace013@d5676686-c01d-4190-a5f9-c6e6d76bcd1f@c1b57ed0-e30d-4c16-8d6c-4c78ea9b7f23"
+                description: "场景id连接"
+                hidden: false
+                mappingName: "sceneIdStrand"
+  contentType: "application/json"
+  minVersion: "1.2.100"
+  maxVersion: ""
+  weight: 0
+  status: "ONLINE"
+  extensionFilters: []
+- apiName: "全域事件库目标事件报文协议获取"
+  description: "通过事件模型编码，获取事件报文协议"
+  apiGroupInfo:
+    groupId: 1786987347913474048
+  apiProviderInfo:
+    pId: 9
+  protocol: "HTTP"
+  path: "/api/v1/dataTable/getEventMqField"
+  httpMethod: "GET"
+  authenticationMode: "1"
+  backendServiceType: "HTTP"
+  backendurl: "/eventlib-spi/v1/dataTable/linkEngine/getEventMqField"
+  backendHttpMethod: "GET"
+  backendTimeout: 10000
+  inParms:
+  - oder: 0
+    paramName: "eventTableIndexCode"
+    paramPos: "Query"
+    paramType: "String"
+    nullable: true
+    demo: "2bb71ba2-cafe-4469-a68b-653fee946943"
+    description: "事件模型编码"
+    backendParam:
+      beParmName: "eventTableIndexCode"
+      beParmPos: "Query"
+  beConsts: []
+  sysParms: []
+  response:
+    resType: "application/json"
+    resDemo: "{\n    \"code\": \"0\",\n    \"msg\": \"SUCCESS\",\n    \"data\": {\n\
+      \        \"jsonModel\": \"{}\",\n        \"schemaModel\": \"{}\",\n        \"\
+      fieldList\": [\n            {\n                \"fieldName\": \"ipAddress\"\
+      ,\n                \"fieldNumber\": \"2\",\n                \"fieldIndexCode\"\
+      : \"2bb71ba2-cafe-4469-a68b-653fee946943-1-2\",\n                \"fieldParentIndexCode\"\
+      : \"0\",\n                \"id\": \"0\",\n                \"fieldIndex\": \"\
+      null\",\n                \"fieldStore\": \"null\",\n                \"fieldType\"\
+      : \"STRING\",\n                \"fieldColumnFamily\": \"null\",\n          \
+      \      \"fieldSize\": \"32\",\n                \"fieldNote\": \"报警设备IPv4地址\"\
+      ,\n                \"fieldChoice\": \"true\",\n                \"children\"\
+      : [\n                    {}\n                ],\n                \"regularChoice\"\
+      : \"1\",\n                \"fieldExplain\": \"null\",\n                \"regularName\"\
+      : \"null\",\n                \"eventTableIndexCode\": \"2bb71ba2-cafe-4469-a68b-653fee946943\"\
+      \n            }\n        ]\n    }\n}"
+    model:
+      name: "Object"
+      type: "Object"
+      required: true
+      example: ""
+      description: ""
+      hidden: false
+      mappingName: ""
+      children:
+      - name: "code"
+        type: "String"
+        required: false
+        example: "0"
+        description: "错误码"
+        hidden: false
+        mappingName: "code"
+      - name: "msg"
+        type: "String"
+        required: false
+        example: "SUCCESS"
+        description: "返回描述信息"
+        hidden: false
+        mappingName: "msg"
+      - name: "data"
+        type: "Object"
+        required: false
+        example: ""
+        description: "返回数据封装"
+        hidden: false
+        mappingName: "data"
+        children:
+        - name: "jsonModel"
+          type: "String"
+          required: false
+          example: "{}"
+          description: "报文模式"
+          hidden: false
+          mappingName: "jsonModel"
+        - name: "schemaModel"
+          type: "String"
+          required: false
+          example: "{}"
+          description: "schema模式"
+          hidden: false
+          mappingName: "schemaModel"
+        - name: "fieldList"
+          type: "Array"
+          required: false
+          example: ""
+          description: "字段列表"
+          hidden: false
+          mappingName: "fieldList"
+          children:
+          - name: "fieldList[0]"
+            type: "Object"
+            required: false
+            example: ""
+            description: "字段信息"
+            hidden: false
+            mappingName: "fieldList[0]"
+            children:
+            - name: "fieldName"
+              type: "String"
+              required: false
+              example: "ipAddress"
+              description: "字段名称"
+              hidden: false
+              mappingName: "fieldName"
+            - name: "fieldNumber"
+              type: "String"
+              required: false
+              example: "2"
+              description: "字段序号"
+              hidden: false
+              mappingName: "fieldNumber"
+            - name: "fieldIndexCode"
+              type: "String"
+              required: false
+              example: "2bb71ba2-cafe-4469-a68b-653fee946943-1-2"
+              description: "字段唯一编码"
+              hidden: false
+              mappingName: "fieldIndexCode"
+            - name: "fieldParentIndexCode"
+              type: "String"
+              required: false
+              example: "0"
+              description: "父级字段编码"
+              hidden: false
+              mappingName: "fieldParentIndexCode"
+            - name: "id"
+              type: "String"
+              required: false
+              example: "0"
+              description: "所关联的数据表ID"
+              hidden: false
+              mappingName: "id"
+            - name: "fieldIndex"
+              type: "String"
+              required: false
+              example: "null"
+              description: "字段是否建索引"
+              hidden: false
+              mappingName: "fieldIndex"
+            - name: "fieldStore"
+              type: "String"
+              required: false
+              example: "null"
+              description: "字段是否存储"
+              hidden: false
+              mappingName: "fieldStore"
+            - name: "fieldType"
+              type: "String"
+              required: false
+              example: "STRING"
+              description: "字段类型"
+              hidden: false
+              mappingName: "fieldType"
+            - name: "fieldColumnFamily"
+              type: "String"
+              required: false
+              example: "null"
+              description: "字段列族"
+              hidden: false
+              mappingName: "fieldColumnFamily"
+            - name: "fieldSize"
+              type: "String"
+              required: false
+              example: "32"
+              description: "字段长度"
+              hidden: false
+              mappingName: "fieldSize"
+            - name: "fieldNote"
+              type: "String"
+              required: false
+              example: "报警设备IPv4地址"
+              description: "字段说明"
+              hidden: false
+              mappingName: "fieldNote"
+            - name: "fieldChoice"
+              type: "String"
+              required: false
+              example: "true"
+              description: "字段可选/必选"
+              hidden: false
+              mappingName: "fieldChoice"
+            - name: "children"
+              type: "Array"
+              required: false
+              example: ""
+              description: "子字段"
+              hidden: false
+              mappingName: "children"
+              children:
+              - name: "children[0]"
+                type: "Object"
+                required: false
+                example: ""
+                description: "字段信息"
+                hidden: false
+                mappingName: "children[0]"
+            - name: "regularChoice"
+              type: "String"
+              required: false
+              example: "1"
+              description: "关联字段是否必选 -1可选 ，1必选"
+              hidden: false
+              mappingName: "regularChoice"
+            - name: "fieldExplain"
+              type: "String"
+              required: false
+              example: "null"
+              description: "关联字段说明"
+              hidden: false
+              mappingName: "fieldExplain"
+            - name: "regularName"
+              type: "String"
+              required: false
+              example: "null"
+              description: "关联字段名字"
+              hidden: false
+              mappingName: "regularName"
+            - name: "eventTableIndexCode"
+              type: "String"
+              required: false
+              example: "2bb71ba2-cafe-4469-a68b-653fee946943"
+              description: "事件模型编码"
+              hidden: false
+              mappingName: "eventTableIndexCode"
+  contentType: ""
+  minVersion: "1.2.100"
+  maxVersion: ""
+  weight: 0
+  status: "ONLINE"
+  extensionFilters: []
+- apiName: "根据事件类型id获取该事件类型的es字段属性列表"
+  description: "\n\n根据事件类型id获取该事件类型的es字段属性列表\n"
+  apiGroupInfo:
+    groupId: 1786987347913474048
+  apiProviderInfo:
+    pId: 9
+  protocol: "HTTPS"
+  path: "/api/v1/dataEvent/getIndexProperties"
+  httpMethod: "GET"
+  authenticationMode: "1"
+  backendServiceType: "HTTP"
+  backendurl: "/eventlib-spi/v1/dataEvent/getIndexProperties"
+  backendHttpMethod: "GET"
+  backendTimeout: 10000
+  inParms:
+  - oder: 0
+    paramName: "eventTableIndexCode"
+    paramPos: "Query"
+    paramType: "String"
+    nullable: false
+    demo: "72057594339918848"
+    description: "事件模型编码"
+    backendParam:
+      beParmName: "eventTableIndexCode"
+      beParmPos: "Query"
+  beConsts: []
+  sysParms: []
+  response:
+    resType: "application/json"
+    resDemo: "{\n    \"code\": \"0\",\n    \"msg\": \"SUCCESS\",\n    \"data\": {\n\
+      \        \"esIndexName\": \"xsink.ai.event\",\n        \"esAliasName\": \"xsink.ai.event\"\
+      ,\n        \"cols\": [\n            {\n                \"propertiesEnName\"\
+      : \"lastTime\",\n                \"propertiesZhName\": \"最近一次事件的时间\",\n    \
+      \            \"propertiesAliasName\": \"\",\n                \"type\": \"long\"\
+      \n            },\n            {\n                \"propertiesEnName\": \"sourceId\"\
+      ,\n                \"propertiesZhName\": \"资产编号\",\n                \"propertiesAliasName\"\
+      : \"sys_exclusive_indexCode\",\n                \"type\": \"keyword\"\n    \
+      \        },\n            {\n                \"propertiesEnName\": \"data\",\n\
+      \                \"propertiesZhName\": \"透传报文\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"nested\"\n            },\n            {\n\
+      \                \"propertiesEnName\": \"algorithmVersion\",\n             \
+      \   \"propertiesZhName\": \"算法版本\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"tenantIndexCode\",\n          \
+      \      \"propertiesZhName\": \"租户域标识\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"verifyUser\",\n               \
+      \ \"propertiesZhName\": \"核验用户\",\n                \"propertiesAliasName\":\
+      \ \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"verifyTime\",\n               \
+      \ \"propertiesZhName\": \"核验时间\",\n                \"propertiesAliasName\":\
+      \ \"\",\n                \"type\": \"long\"\n            },\n            {\n\
+      \                \"propertiesEnName\": \"confirmMsg\",\n                \"propertiesZhName\"\
+      : \"事件回溯消息\",\n                \"propertiesAliasName\": \"\",\n            \
+      \    \"type\": \"keyword\"\n            },\n            {\n                \"\
+      propertiesEnName\": \"uids\",\n                \"propertiesZhName\": \"授权用户\"\
+      ,\n                \"propertiesAliasName\": \"\",\n                \"type\"\
+      : \"keyword\"\n            },\n            {\n                \"propertiesEnName\"\
+      : \"confirmStatus\",\n                \"propertiesZhName\": \"事件回溯状态\",\n  \
+      \              \"propertiesAliasName\": \"\",\n                \"type\": \"\
+      integer\"\n            },\n            {\n                \"propertiesEnName\"\
+      : \"judgmentTime\",\n                \"propertiesZhName\": \"判断时间\",\n     \
+      \           \"propertiesAliasName\": \"\",\n                \"type\": \"keyword\"\
+      \n            },\n            {\n                \"propertiesEnName\": \"ruleId\"\
+      ,\n                \"propertiesZhName\": \"规则id\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"happenTime\",\n               \
+      \ \"propertiesZhName\": \"发生时间\",\n                \"propertiesAliasName\":\
+      \ \"\",\n                \"type\": \"long\"\n            },\n            {\n\
+      \                \"propertiesEnName\": \"longitude\",\n                \"propertiesZhName\"\
+      : \"经度\",\n                \"propertiesAliasName\": \"sys_exclusive_pointLongitude\"\
+      ,\n                \"type\": \"double\"\n            },\n            {\n   \
+      \             \"propertiesEnName\": \"level\",\n                \"propertiesZhName\"\
+      : \"事件级别\",\n                \"propertiesAliasName\": \"\",\n              \
+      \  \"type\": \"integer\"\n            },\n            {\n                \"\
+      propertiesEnName\": \"sys_exclusive_eventTypeName\",\n                \"propertiesZhName\"\
+      : \"事件类型名称\",\n                \"propertiesAliasName\": \"\",\n            \
+      \    \"type\": \"keyword\"\n            },\n            {\n                \"\
+      propertiesEnName\": \"resourceName\",\n                \"propertiesZhName\"\
+      : \"资源名称\",\n                \"propertiesAliasName\": \"\",\n              \
+      \  \"type\": \"keyword\"\n            },\n            {\n                \"\
+      propertiesEnName\": \"eventType\",\n                \"propertiesZhName\": \"\
+      事件类型\",\n                \"propertiesAliasName\": \"sys_exclusive_eventType\"\
+      ,\n                \"type\": \"keyword\"\n            },\n            {\n  \
+      \              \"propertiesEnName\": \"algorithmName\",\n                \"\
+      propertiesZhName\": \"算法名称\",\n                \"propertiesAliasName\": \"\"\
+      ,\n                \"type\": \"keyword\"\n            },\n            {\n  \
+      \              \"propertiesEnName\": \"sys_exclusive_sourceCompanyCode\",\n\
+      \                \"propertiesZhName\": \"数源单位编码\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"eventHsapCode\",\n            \
+      \    \"propertiesZhName\": \"HSAP事件编码\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"sys_exclusive_verify\",\n     \
+      \           \"propertiesZhName\": \"是否过复核\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"sys_exclusive_pointTitle\",\n \
+      \               \"propertiesZhName\": \"点位名称\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"taskName\",\n                \"\
+      propertiesZhName\": \"任务/名称\",\n                \"propertiesAliasName\": \"\"\
+      ,\n                \"type\": \"keyword\"\n            },\n            {\n  \
+      \              \"propertiesEnName\": \"applicationId\",\n                \"\
+      propertiesZhName\": \"申请单号\",\n                \"propertiesAliasName\": \"\"\
+      ,\n                \"type\": \"keyword\"\n            },\n            {\n  \
+      \              \"propertiesEnName\": \"happenTimeStr\",\n                \"\
+      propertiesZhName\": \"发生时间字符串\",\n                \"propertiesAliasName\": \"\
+      sys_exclusive_reportTime\",\n                \"type\": \"keyword\"\n       \
+      \     },\n            {\n                \"propertiesEnName\": \"snappedPicUrl\"\
+      ,\n                \"propertiesZhName\": \"图片存储地址\",\n                \"propertiesAliasName\"\
+      : \"sys_exclusive_eventImage\",\n                \"type\": \"keyword\"\n   \
+      \         },\n            {\n                \"propertiesEnName\": \"componentId\"\
+      ,\n                \"propertiesZhName\": \"组件标识\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"latitude\",\n                \"\
+      propertiesZhName\": \"纬度\",\n                \"propertiesAliasName\": \"sys_exclusive_pointLatitude\"\
+      ,\n                \"type\": \"double\"\n            },\n            {\n   \
+      \             \"propertiesEnName\": \"presetIndexCode\",\n                \"\
+      propertiesZhName\": \"预置点\",\n                \"propertiesAliasName\": \"\"\
+      ,\n                \"type\": \"keyword\"\n            },\n            {\n  \
+      \              \"propertiesEnName\": \"scenceId\",\n                \"propertiesZhName\"\
+      : \"场景id\",\n                \"propertiesAliasName\": \"\",\n              \
+      \  \"type\": \"keyword\"\n            },\n            {\n                \"\
+      propertiesEnName\": \"verifyStatus\",\n                \"propertiesZhName\"\
+      : \"事件核验状态\",\n                \"propertiesAliasName\": \"\",\n            \
+      \    \"type\": \"integer\"\n            },\n            {\n                \"\
+      propertiesEnName\": \"aiFunctionCode\",\n                \"propertiesZhName\"\
+      : \"算法唯一标识\",\n                \"propertiesAliasName\": \"\",\n            \
+      \    \"type\": \"keyword\"\n            },\n            {\n                \"\
+      propertiesEnName\": \"strategyId\",\n                \"propertiesZhName\": \"\
+      策略编号\",\n                \"propertiesAliasName\": \"\",\n                \"\
+      type\": \"keyword\"\n            },\n            {\n                \"propertiesEnName\"\
+      : \"fatherSourceId\",\n                \"propertiesZhName\": \"父事件id\",\n  \
+      \              \"propertiesAliasName\": \"\",\n                \"type\": \"\
+      keyword\"\n            },\n            {\n                \"propertiesEnName\"\
+      : \"strategyName\",\n                \"propertiesZhName\": \"策略名称\",\n     \
+      \           \"propertiesAliasName\": \"\",\n                \"type\": \"keyword\"\
+      \n            },\n            {\n                \"propertiesEnName\": \"locationName\"\
+      ,\n                \"propertiesZhName\": \"关联地址\",\n                \"propertiesAliasName\"\
+      : \"sys_exclusive_placeReport\",\n                \"type\": \"keyword\"\n  \
+      \          },\n            {\n                \"propertiesEnName\": \"extendJson\"\
+      ,\n                \"propertiesZhName\": \"扩展字段\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"nested\"\n            },\n            {\n\
+      \                \"propertiesEnName\": \"verifyResult\",\n                \"\
+      propertiesZhName\": \"核验结果\",\n                \"propertiesAliasName\": \"\"\
+      ,\n                \"type\": \"keyword\"\n            },\n            {\n  \
+      \              \"propertiesEnName\": \"resourceIndexCode\",\n              \
+      \  \"propertiesZhName\": \"资源内码\",\n                \"propertiesAliasName\"\
+      : \"sys_exclusive_equipCode\",\n                \"type\": \"keyword\"\n    \
+      \        },\n            {\n                \"propertiesEnName\": \"sys_exclusive_eventTypeCode\"\
+      ,\n                \"propertiesZhName\": \"事件类型id\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"eventLabel\",\n               \
+      \ \"propertiesZhName\": \"事件标签\",\n                \"propertiesAliasName\":\
+      \ \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"strategyStatus\",\n           \
+      \     \"propertiesZhName\": \"是否过策略\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"algorithmType\",\n            \
+      \    \"propertiesZhName\": \"算法类型\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"sys_exclusive_sourceCompanyName\"\
+      ,\n                \"propertiesZhName\": \"数源单位名称\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"eventStatus\",\n              \
+      \  \"propertiesZhName\": \"事件有效性\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"relatedsourceId\",\n          \
+      \      \"propertiesZhName\": \"关联的事件id\",\n                \"propertiesAliasName\"\
+      : \"\",\n                \"type\": \"keyword\"\n            },\n           \
+      \ {\n                \"propertiesEnName\": \"quids\",\n                \"propertiesZhName\"\
+      : \"查询的用户\",\n                \"propertiesAliasName\": \"\",\n             \
+      \   \"type\": \"keyword\"\n            },\n            {\n                \"\
+      propertiesEnName\": \"taskSubType\",\n                \"propertiesZhName\":\
+      \ \"子任务/子类型\",\n                \"propertiesAliasName\": \"\",\n           \
+      \     \"type\": \"keyword\"\n            },\n            {\n               \
+      \ \"propertiesEnName\": \"relatedEventType\",\n                \"propertiesZhName\"\
+      : \"关联事件类型\",\n                \"propertiesAliasName\": \"\",\n            \
+      \    \"type\": \"integer\"\n            },\n            {\n                \"\
+      propertiesEnName\": \"resourceExternalCode\",\n                \"propertiesZhName\"\
+      : \"资源编号（外码）\",\n                \"propertiesAliasName\": \"\",\n          \
+      \      \"type\": \"keyword\"\n            },\n            {\n              \
+      \  \"propertiesEnName\": \"taskId\",\n                \"propertiesZhName\":\
+      \ \"任务编号（ais）\",\n                \"propertiesAliasName\": \"\",\n         \
+      \       \"type\": \"keyword\"\n            },\n            {\n             \
+      \   \"propertiesEnName\": \"resourceType\",\n                \"propertiesZhName\"\
+      : \"资源类型\",\n                \"propertiesAliasName\": \"\",\n              \
+      \  \"type\": \"keyword\"\n            },\n            {\n                \"\
+      propertiesEnName\": \"sys_exclusive_warehouseTime\",\n                \"propertiesZhName\"\
+      : \"写入es的时间\",\n                \"propertiesAliasName\": \"\",\n           \
+      \     \"type\": \"long\"\n            },\n            {\n                \"\
+      propertiesEnName\": \"sys_exclusive_warning_sign\",\n                \"propertiesZhName\"\
+      : \"预警事件标识\",\n                \"propertiesAliasName\": \"\",\n            \
+      \    \"type\": \"integer\"\n            }\n        ]\n    }\n}"
+    model:
+      name: "Object"
+      type: "Object"
+      required: true
+      description: ""
+      hidden: false
+      children:
+      - name: "code"
+        type: "String"
+        required: true
+        example: "0"
+        description: "错误码"
+        hidden: false
+      - name: "msg"
+        type: "String"
+        required: true
+        example: "SUCCESS"
+        description: "返回描述信息"
+        hidden: false
+      - name: "data"
+        type: "Object"
+        required: false
+        description: "返回封装数据"
+        hidden: false
+        children:
+        - name: "esIndexName"
+          type: "String"
+          required: false
+          example: "xsink.ai.event"
+          description: "es索引名称"
+          hidden: false
+        - name: "esAliasName"
+          type: "String"
+          required: false
+          example: "xsink.ai.event"
+          description: "索引别名"
+          hidden: false
+        - name: "cols"
+          type: "Array"
+          required: false
+          description: "字段列表"
+          hidden: false
+          children:
+          - name: "cols[0]"
+            type: "Object"
+            required: false
+            description: ""
+            hidden: false
+            children:
+            - name: "propertiesEnName"
+              type: "String"
+              required: false
+              example: "lastTime"
+              description: "es字段英文名称"
+              hidden: false
+            - name: "propertiesZhName"
+              type: "String"
+              required: false
+              example: "最近一次事件的时间"
+              description: "中文名称"
+              hidden: false
+            - name: "propertiesAliasName"
+              type: "String"
+              required: false
+              example: "lastTime"
+              description: "es别名"
+              hidden: false
+            - name: "type"
+              type: "String"
+              required: false
+              example: "long"
+              description: "字段类型"
+              hidden: false
+  contentType: ""
+  minVersion: "1.2.1"
+  maxVersion: ""
+  weight: 0
+  status: "ONLINE"
+  extensionFilters: []
+- apiName: "通用事件检索"
+  description: "通用事件检索"
+  apiGroupInfo:
+    groupId: 1786987347913474048
+  apiProviderInfo:
+    pId: 10
+  protocol: "HTTP"
+  path: "/api/common/v1/query"
+  httpMethod: "POST"
+  authenticationMode: "1"
+  backendServiceType: "HTTP"
+  backendurl: "/eventlib-search/common/v1/query"
+  backendHttpMethod: "POST"
+  backendTimeout: 10000
+  inParms:
+  - paramName: "body"
+    paramPos: "Body"
+    paramType: "application/json"
+    nullable: false
+    model:
+      name: "Object"
+      type: "Object"
+      required: true
+      example: " "
+      description: ""
+      hidden: false
+      mappingName: ""
+      mappingPosition: "Body"
+      children:
+      - name: "returnFields"
+        type: "String"
+        required: false
+        example: "*"
+        description: "查询结果字段,“*”表示所有字段,如需指定返回结果字段，使用逗号分隔开即可"
+        hidden: false
+        mappingName: "returnFields"
+        mappingPosition: "Body"
+      - name: "eventName"
+        type: "String"
+        required: true
+        example: "FACE"
+        description: "必填，要查询的事件名称，取值为事件的索引名前缀（即去掉时间戳的前面部分），只支持查询单个事件，String类型"
+        hidden: false
+        mappingName: "eventName"
+        mappingPosition: "Body"
+      - name: "eventKeys"
+        type: "String"
+        required: false
+        example: "face"
+        description: "事件标识，与eventName必须填一个"
+        hidden: false
+        mappingName: ""
+        mappingPosition: "Body"
+      - name: "pageNo"
+        type: "Number"
+        required: false
+        example: "1"
+        description: "查询结果的页码数(不能小于1)，默认为1"
+        hidden: false
+        mappingName: "pageNo"
+        mappingPosition: "Body"
+        defaultValue: "1"
+      - name: "pageSize"
+        type: "Number"
+        required: false
+        example: "10"
+        description: "查询结果每页的数量(不能小于1)，默认为10"
+        hidden: false
+        mappingName: "pageSize"
+        mappingPosition: "Body"
+        defaultValue: "10"
+      - name: "fieldOptions"
+        type: "Array"
+        required: false
+        example: " "
+        description: "查询条件，and关系"
+        hidden: false
+        mappingName: "fieldOptions"
+        mappingPosition: "Body"
+        children:
+        - name: "fieldOptions[0]"
+          type: "Object"
+          required: false
+          example: " "
+          description: ""
+          hidden: false
+          mappingName: "fieldOptions[0]"
+          mappingPosition: "Body"
+          children:
+          - name: "fieldName"
+            type: "String"
+            required: false
+            example: "name"
+            description: "条件字段名。支持数据查询接口的query体内的字段。"
+            hidden: false
+            mappingName: "fieldName"
+            mappingPosition: "Body"
+          - name: "value"
+            type: "String"
+            required: false
+            example: "face_event"
+            description: "条件值"
+            hidden: false
+            mappingName: "value"
+            mappingPosition: "Body"
+          - name: "type"
+            type: "String"
+            required: false
+            example: "in"
+            description: "必填，查询条件指定，类似于sql中的where语句限定。传入一个或多个查询条件，多个条件之间为and关系。type字\
+              段表示过滤条件的类型，可选值为： terms：等于（单值匹配） in：多值匹配，多个值时用“,”分割 like：模糊匹配 lt：小于 le：\
+              小于等于 gt：大于 ge：大于等于， /*lt，le，gt，ge这四种条件同一个字段只能同时设定一个，如需范围查询使用range*/\
+              \ range：范围匹配，需要两个参数值，如[1000,2000]范围查询 (,) [,] 开闭区间组合。/*同一字段不可同时设置range和\
+              以上的【lt le gt ge】*/ timeRange：时间范围匹配，传入两个ISO8601时间格式，如[2022-05-20T13:29:35.000+08:00,\
+              \ 2022-05-22T13:29:35.000+08:00]，时间范围(,)、[,] 开闭区间组合"
+            hidden: false
+            mappingName: "type"
+            mappingPosition: "Body"
+      - name: "fieldMultipleOptions"
+        type: "Array"
+        required: false
+        example: " "
+        description: "复合关系and、or、not"
+        hidden: false
+        mappingName: "fieldMultipleOptions"
+        mappingPosition: "Body"
+      - name: "sort"
+        type: "Array"
+        required: false
+        example: " "
+        description: "排序条件"
+        hidden: false
+        mappingName: "sort"
+        mappingPosition: "Body"
+        children:
+        - name: "sort[0]"
+          type: "Object"
+          required: false
+          example: " "
+          description: ""
+          hidden: false
+          mappingName: "sort[0]"
+          mappingPosition: "Body"
+          children:
+          - name: "method"
+            type: "String"
+            required: false
+            example: "desc"
+            description: "排序方式。可选desc、asc"
+            hidden: false
+            mappingName: "method"
+            mappingPosition: "Body"
+          - name: "column"
+            type: "String"
+            required: false
+            example: "happenTime"
+            description: "排序字段"
+            hidden: false
+            mappingName: "column"
+            mappingPosition: "Body"
+    demo: "{\n    \"returnFields\": \"*\",\n    \"eventName\": \"xvehicle.bayonet_vehiclealarm\"\
+      ,\n    \"pageNo\": 1,\n    \"pageSize\": 10,\n    \"fieldOptions\": [\n    \
+      \    {\n            \"fieldName\": \"portNo\",\n            \"value\": \"8001\"\
+      ,\n            \"type\": \"in\"\n        }\n    ]\n}"
+    description: ""
+    backendParam:
+      beParmName: "body"
+      beParmPos: "Body"
+  beConsts: []
+  sysParms: []
+  response:
+    resType: "application/json"
+    resDemo: "{\n    \"code\": \"0\",\n    \"msg\": \"SUCCESS\",\n    \"data\": {\n\
+      \        \"total\": 1000,\n        \"list\": [\n            {\n            \
+      \    \"key\": \"name\",\n                \"value\": \"face\"\n            }\n\
+      \        ]\n    }\n}"
+    model:
+      name: "Object"
+      type: "Object"
+      required: true
+      example: ""
+      description: ""
+      hidden: false
+      mappingName: ""
+      children:
+      - name: "code"
+        type: "String"
+        required: false
+        example: "0"
+        description: "错误码"
+        hidden: false
+        mappingName: "code"
+      - name: "msg"
+        type: "String"
+        required: false
+        example: "SUCCESS"
+        description: "返回描述信息"
+        hidden: false
+        mappingName: "msg"
+      - name: "data"
+        type: "Object"
+        required: false
+        example: ""
+        description: "返回体"
+        hidden: false
+        mappingName: "data"
+        children:
+        - name: "total"
+          type: "Number"
+          required: false
+          example: "1000"
+          description: "总条数"
+          hidden: false
+          mappingName: "total"
+        - name: "list"
+          type: "Array"
+          required: false
+          example: ""
+          description: "为多条返回结果的map结构"
+          hidden: false
+          mappingName: "list"
+          children:
+          - name: "list[0]"
+            type: "Object"
+            required: false
+            example: ""
+            description: ""
+            hidden: false
+            mappingName: "list[0]"
+            children:
+            - name: "key"
+              type: "String"
+              required: false
+              example: "name"
+              description: "字段英文名称"
+              hidden: false
+              mappingName: "key"
+            - name: "value"
+              type: "String"
+              required: false
+              example: "face"
+              description: "字段内容值"
+              hidden: false
+              mappingName: "value"
+  contentType: "application/json"
+  minVersion: "1.2.100"
+  maxVersion: ""
+  weight: 0
+  status: "ONLINE"
+  extensionFilters: []
+- apiName: "通用事件统计"
+  description: "通用事件统计"
+  apiGroupInfo:
+    groupId: 1786987347913474048
+  apiProviderInfo:
+    pId: 10
+  protocol: "HTTP"
+  path: "/api/common/v1/statistic"
+  httpMethod: "POST"
+  authenticationMode: "1"
+  backendServiceType: "HTTP"
+  backendurl: "/eventlib-search/common/v1/statistic"
+  backendHttpMethod: "POST"
+  backendTimeout: 10000
+  inParms:
+  - paramName: "body"
+    paramPos: "Body"
+    paramType: "application/json"
+    nullable: true
+    model:
+      name: "Object"
+      type: "Object"
+      required: true
+      example: " "
+      description: "root"
+      hidden: false
+      mappingPosition: "Body"
+      children:
+      - name: "eventName"
+        type: "String"
+        required: true
+        example: "xsearch_face_snap_video"
+        description: "必填，要查询的事件的es索引名称"
+        hidden: false
+        mappingName: "eventName"
+        mappingPosition: "Body"
+      - name: "maxRows"
+        type: "Number"
+        required: true
+        example: "100"
+        description: "返回结果最大行数"
+        hidden: false
+        mappingName: "maxRows"
+        mappingPosition: "Body"
+      - name: "fieldOptions"
+        type: "Array"
+        required: true
+        example: " "
+        description: "列过滤条件，多个列之间为and关系"
+        hidden: false
+        mappingName: "fieldOptions"
+        mappingPosition: "Body"
+        children:
+        - name: "fieldOptions[0]"
+          type: "Object"
+          required: true
+          example: " "
+          hidden: false
+          mappingName: "fieldOptions[0]"
+          mappingPosition: "Body"
+          children:
+          - name: "fieldName"
+            type: "String"
+            required: true
+            example: "value"
+            description: "es 字段名"
+            hidden: false
+            mappingName: "fieldName"
+            mappingPosition: "Body"
+          - name: "value"
+            type: "String"
+            required: true
+            example: "10"
+            description: "条件值"
+            hidden: false
+            mappingName: "value"
+            mappingPosition: "Body"
+          - name: "type"
+            type: "String"
+            required: true
+            example: "ge"
+            description: "必填，查询条件指定，类似于sql中的where语句限定。传入一个或多个查询条件，多个条件之间为and关系。type字\
+              段表示过滤条件的类型，可选值为： terms：等于（单值匹配） in：多值匹配，多个值时用“,”分割 like：模糊匹配 lt：小于 le：\
+              小于等于  gt：大于 ge：大于等于， /*lt，le，gt，ge这四种条件同一个字段只能同时设定一个，如需范围查询使用range*/\
+              \ range：范围匹配，需要两个参数值，如[1000,2000]范围查询 (,)  [,] 开闭区间组合。/*同一字段不可同时设置range和\
+              以上的【lt le gt ge】*/ timeRange：时间范围匹配，传入两个ISO8601时间格式，如[2022-05-20T13:29:35.000+08:00,\
+              \ 2022-05-22T13:29:35.000+08:00]，时间范围(,)、[,] 开闭区间组合"
+            hidden: false
+            mappingName: "type"
+            mappingPosition: "Body"
+      - name: "aggCols"
+        type: "Array"
+        required: true
+        example: " "
+        description: "可以对指定列进行值聚合操作"
+        hidden: false
+        mappingName: "aggCols"
+        mappingPosition: "Body"
+        children:
+        - name: "aggCols[0]"
+          type: "Object"
+          required: true
+          example: " "
+          hidden: false
+          mappingName: "aggCols[0]"
+          mappingPosition: "Body"
+          children:
+          - name: "name"
+            type: "String"
+            required: true
+            example: "value"
+            description: "列名"
+            hidden: false
+            mappingName: "name"
+            mappingPosition: "Body"
+          - name: "aggFunc"
+            type: "String"
+            required: true
+            example: "sum"
+            description: "聚合函数名，目前仅支持sum(默认)"
+            hidden: false
+            mappingName: "aggFunc"
+            mappingPosition: "Body"
+      - name: "groupByCols"
+        type: "String"
+        required: true
+        example: "srcIndex"
+        description: "分组列名，多个列名使用,分割"
+        hidden: false
+        mappingName: "groupByCols"
+        mappingPosition: "Body"
+    demo: "{\n    \"eventName\": \"xsearch_face_snap_video\",\n    \"maxRows\": 100,\n\
+      \    \"fieldOptions\": [\n        {\n            \"fieldName\": \"value\",\n\
+      \            \"value\": \"10\",\n            \"type\": \"ge\"\n        }\n \
+      \   ],\n    \"aggCols\": [\n        {\n            \"name\": \"value\",\n  \
+      \          \"aggFunc\": \"sum\"\n        }\n    ],\n    \"groupByCols\": \"\
+      srcIndex\"\n}"
+    backendParam:
+      beParmName: "body"
+      beParmPos: "Body"
+  beConsts: []
+  sysParms: []
+  response:
+    resType: "application/json"
+    resDemo: "{\n    \"code\": \"0\",\n    \"msg\": \"SUCCESS\",\n    \"data\": {\n\
+      \        \"total\": 100,\n        \"list\": [\n            {\n             \
+      \   \"colName\": \"name\",\n                \"value\": \"150.54\",\n       \
+      \         \"aggType\": \"groupBy\",\n                \"docCount\": 1,\n    \
+      \            \"children\": [\n                    {\n                      \
+      \  \"colName\": \"value\",\n                        \"value\": \"150.54\",\n\
+      \                       \"aggType\": \"sum\",\n                    }\n     \
+      \           ]\n            }\n        ]\n    }\n}"
+    resDesc: "successful operation"
+    model:
+      name: "Object"
+      type: "Object"
+      required: true
+      example: ""
+      description: "root"
+      hidden: false
+      children:
+      - name: "code"
+        type: "String"
+        required: true
+        example: "0"
+        description: "状态码"
+        hidden: false
+        mappingName: "code"
+      - name: "msg"
+        type: "String"
+        required: true
+        example: "SUCCESS"
+        description: "信息"
+        hidden: false
+        mappingName: "msg"
+      - name: "data"
+        type: "Object"
+        required: false
+        example: ""
+        description: "返回体"
+        hidden: false
+        mappingName: "data"
+        children:
+        - name: "total"
+          type: "Number"
+          required: true
+          example: "100"
+          description: "总条数"
+          hidden: false
+          mappingName: "total"
+        - name: "list"
+          type: "Array"
+          required: false
+          example: ""
+          description: "为多条返回结果的map结构"
+          hidden: false
+          mappingName: "list"
+          children:
+          - name: "list[0]"
+            type: "Object"
+            required: false
+            example: ""
+            description: "一条数据"
+            hidden: false
+            mappingName: "list[0]"
+            children:
+            - name: "colName"
+              type: "String"
+              required: true
+              example: "name"
+              description: "列名"
+              hidden: false
+              mappingName: "colName"
+            - name: "value"
+              type: "String"
+              required: true
+              example: "150.54"
+              description: "聚合结果值"
+              hidden: false
+              mappingName: "value"
+            - name: "docCount"
+              type: "Number"
+              required: false
+              example: "2"
+              description: "如果是分组列，表示其该分组内的总数"
+              hidden: false
+              mappingName: "docCount"
+            - name: "aggType"
+              type: "String"
+              required: false
+              example: "sum"
+              description: "聚合类型"
+              hidden: false
+              mappingName: "aggType"
+            - name: "children"
+              type: "Array"
+              required: true
+              example: ""
+              description: "子字段"
+              hidden: false
+              mappingName: "children"
+              children:
+              - name: "children[0]"
+                type: "Object"
+                required: false
+                example: ""
+                hidden: false
+                mappingName: "children[0]"
+  contentType: "application/json"
+  minVersion: "1.2.100"
+  maxVersion: ""
+  weight: 0
+  status: "ONLINE"
+  extensionFilters: []
+- apiName: "通过事件名称或者事件码获取事件列表"
+  description: "通过事件名称或者事件码获取事件列表"
+  apiGroupInfo:
+    groupId: 1786987347913474048
+  apiProviderInfo:
+    pId: 9
+  protocol: "HTTP"
+  path: "/api/eventCode/v1/searchEventCodes"
+  httpMethod: "POST"
+  authenticationMode: "1"
+  backendServiceType: "HTTP"
+  backendurl: "/eventlib-spi/v1/event/searchEventCodes"
+  backendHttpMethod: "POST"
+  backendTimeout: 10000
+  inParms:
+  - paramName: "body"
+    paramPos: "Body"
+    paramType: "application/json"
+    nullable: true
+    model:
+      name: "Object"
+      type: "Object"
+      required: true
+      example: " "
+      hidden: false
+      mappingPosition: "Body"
+      children:
+      - name: "pageSize"
+        type: "Number"
+        required: false
+        example: "20"
+        description: "分页大小，默认20"
+        hidden: false
+        mappingName: "pageSize"
+        mappingPosition: "Body"
+      - name: "pageNo"
+        type: "Number"
+        required: false
+        example: "1"
+        description: "页数，默认1"
+        hidden: false
+        mappingName: "pageNo"
+        mappingPosition: "Body"
+      - name: "keyword"
+        type: "String"
+        required: false
+        example: "人脸"
+        description: "关键字搜索"
+        hidden: false
+        mappingName: "keyword"
+        mappingPosition: "Body"
+    demo: "{\n    \"pageSize\": 20,\n    \"pageNo\": 1,\n    \"keyword\": \"人脸\"\n\
+      }"
+    backendParam:
+      beParmName: "body"
+      beParmPos: "Body"
+  beConsts: []
+  sysParms: []
+  response:
+    resType: "application/json"
+    resDemo: "{\n    \"code\": \"0\",\n    \"msg\": \"SUCCESS\",\n    \"data\": {\n\
+      \        \"pageNo\": 1,\n        \"pageSize\": 20,\n        \"total\": 1,\n\
+      \        \"totalPage\": 1,\n        \"list\": [\n            {\n           \
+      \     \"eventName\": \"人脸视频分析事件\",\n                \"eventCode\": \"\"\n  \
+      \          }\n        ]\n    }\n}"
+    resDesc: "successful operation"
+    model:
+      name: "Object"
+      type: "Object"
+      required: true
+      example: ""
+      hidden: false
+      children:
+      - name: "code"
+        type: "String"
+        required: true
+        example: "0"
+        description: "错误码"
+        hidden: false
+        mappingName: "code"
+      - name: "msg"
+        type: "String"
+        required: true
+        example: "SUCCESS"
+        description: "返回描述信息"
+        hidden: false
+        mappingName: "msg"
+      - name: "data"
+        type: "Object"
+        required: true
+        example: ""
+        description: "返回封装数据"
+        hidden: false
+        mappingName: "data"
+        children:
+        - name: "pageNo"
+          type: "Number"
+          required: true
+          example: "1"
+          description: "页码"
+          hidden: false
+          mappingName: "pageNo"
+        - name: "pageSize"
+          type: "Number"
+          required: true
+          example: "20"
+          description: "页大小"
+          hidden: false
+          mappingName: "pageSize"
+        - name: "total"
+          type: "Number"
+          required: true
+          example: "1"
+          description: "总数"
+          hidden: false
+          mappingName: "total"
+        - name: "totalPage"
+          type: "Number"
+          required: true
+          example: "1"
+          description: "总页数"
+          hidden: false
+          mappingName: "totalPage"
+        - name: "list"
+          type: "Array"
+          required: true
+          example: ""
+          description: "事件列表"
+          hidden: false
+          mappingName: "list"
+          children:
+          - name: "list[0]"
+            type: "Object"
+            required: false
+            example: ""
+            hidden: false
+            mappingName: "list[0]"
+            children:
+            - name: "eventName"
+              type: "String"
+              required: true
+              example: "人脸加刷卡加指纹认证超时事件"
+              description: "事件名称"
+              hidden: false
+              mappingName: "eventName"
+            - name: "eventCode"
+              type: "String"
+              required: true
+              example: "197150"
+              description: "事件十进制编码"
+              hidden: false
+              mappingName: "eventCode"
+  contentType: "application/json"
+  minVersion: "1.2.100"
+  maxVersion: ""
+  weight: 2147483647
+  status: "ONLINE"
+  extensionFilters: []

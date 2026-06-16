@@ -2,8 +2,9 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import DashboardPanel from '../DashboardPanel.vue'
-import { useReducedMotion } from '../../composables/useReducedMotion'
-import { useDetailModal } from '../../composables/useDetailModal'
+import { useReducedMotion } from '@/composables/useReducedMotion'
+import { useDetailModal } from '@/composables/useDetailModal'
+import { useEventQuery } from '@/composables/useEventQuery'
 
 const chartRef = ref<HTMLDivElement>()
 
@@ -11,37 +12,22 @@ let chartInstance: echarts.ECharts | null = null
 
 const { prefersReducedMotion } = useReducedMotion()
 const { openRecords } = useDetailModal()
+const { fetchAreaTrend } = useEventQuery()
 
-// 动态生成近7天日期（MM-dd）
-function formatDate(d: Date): string {
-  return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+interface LegendItem {
+  name: string
+  color: string
+  data: number[]
 }
 
-function last7Days(): string[] {
-  const result: string[] = []
-  const now = new Date()
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i)
-    result.push(formatDate(d))
-  }
-  return result
-}
+const dates = ref<string[]>([])
+const legends = ref<LegendItem[]>([])
 
-const dates = last7Days()
+onMounted(async () => {
+  const data = await fetchAreaTrend()
+  dates.value = data.dates
+  legends.value = data.legends
 
-// 随机数据生成
-function randData(base: number, range: number): number[] {
-  return Array.from({ length: 7 }, () => Math.round(base + Math.random() * range))
-}
-
-const legends = [
-  { name: '小街面商', color: '#1e80ff', data: randData(800, 500) },
-  { name: '垃圾暴露', color: '#24d8e8', data: randData(500, 250) },
-  { name: '车辆违停', color: '#ffb300', data: randData(250, 150) },
-  { name: '人居环境', color: '#7c5cff', data: randData(400, 150) }
-]
-
-onMounted(() => {
   if (!chartRef.value) return
 
   chartInstance = echarts.init(chartRef.value)
@@ -72,7 +58,7 @@ onMounted(() => {
         fontSize: 12
       },
 
-      data: legends.map(item => item.name)
+      data: legends.value.map(item => item.name)
     },
 
     grid: {
@@ -85,7 +71,7 @@ onMounted(() => {
     xAxis: {
       type: 'category',
 
-      data: dates,
+      data: dates.value,
 
       boundaryGap: false,
 
@@ -131,7 +117,7 @@ onMounted(() => {
       }
     },
 
-    series: legends.map(item => ({
+    series: legends.value.map(item => ({
       name: item.name,
 
       type: 'line',
@@ -182,11 +168,11 @@ onMounted(() => {
     if (!pointInGrid) return
 
     const idx = Math.round(pointInGrid[0])
-    if (idx < 0 || idx >= dates.length) return
+    if (idx < 0 || idx >= dates.value.length) return
 
     openRecords({
-      title: `详情 - ${dates[idx]} 全部事件`,
-      filterDate: dates[idx]
+      title: `详情 - ${dates.value[idx]} 全部事件`,
+      filterDate: dates.value[idx]
     })
   })
 

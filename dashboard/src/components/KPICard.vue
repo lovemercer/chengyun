@@ -11,7 +11,7 @@ defineProps<{
 <template>
   <div class="kpi-card">
 
-    <div class="icon-wrapper">
+    <div v-if="$slots.icon" class="icon-wrapper">
 
       <div class="icon-glow"></div>
 
