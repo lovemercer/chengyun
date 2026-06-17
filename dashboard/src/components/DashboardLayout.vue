@@ -43,9 +43,9 @@ onMounted(async () => {
     { label: '事件总数 (累计)', value: stats.total },
     { label: '今日新增事件', value: stats.today, change: stats.todayChange, changeType: stats._todayDir, changeLabel: '较昨日' },
     { label: '昨日新增事件', value: stats.yesterdayValue, change: stats.yesterdayChange, changeType: stats._yesterdayDir, changeLabel: '较前日' },
-    { label: '近一周事件数', value: stats.thisWeek, change: stats.thisWeekChange, changeType: stats._weekDir, changeLabel: '环比' },
-    { label: '近一月事件数', value: stats.thisMonth, change: stats.thisMonthChange, changeType: stats._monthDir, changeLabel: '环比' },
-    { label: '近一年事件数', value: stats.thisYear, change: stats.thisYearChange, changeType: stats._yearDir, changeLabel: '同比' },
+    { label: '本周事件数', value: stats.thisWeek, change: stats.thisWeekChange, changeType: stats._weekDir, changeLabel: '环比' },
+    { label: '本月事件数', value: stats.thisMonth, change: stats.thisMonthChange, changeType: stats._monthDir, changeLabel: '环比' },
+    { label: '本年事件数', value: stats.thisYear, change: stats.thisYearChange, changeType: stats._yearDir, changeLabel: '同比' },
   ]
   kpiReady.value = true
 })

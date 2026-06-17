@@ -82,10 +82,15 @@ export async function fetchKpiStats() {
 }
 
 // ============================================================
-// 事件类型占比（饼图）
+// 事件类型占比 + TOP5 排名（共享一次 API 调用）
 // ============================================================
 
-export async function fetchCategoryDistribution() {
+// 模块级缓存：饼图和排名参数相同，谁先调就查 API，后调的直接复用
+let _typeDistCache: { total: number; categories: Array<{ name: string; value: number }> } | null = null
+
+async function fetchTypeDistribution() {
+  if (_typeDistCache) return _typeDistCache
+
   const { init } = useEventData()
   await init()
 
@@ -98,32 +103,33 @@ export async function fetchCategoryDistribution() {
     value: item.count || 0,
   }))
 
-  const total = categories.reduce((sum: number, c) => sum + c.value, 0)
+  _typeDistCache = {
+    total: categories.reduce((sum: number, c) => sum + c.value, 0),
+    categories,
+  }
 
-  return { total, categories }
+  return _typeDistCache
 }
 
-// ============================================================
-// TOP5 排名
-// ============================================================
+export async function fetchCategoryDistribution() {
+  return fetchTypeDistribution()
+}
 
 export async function fetchRanking(topN = 5) {
   const { init, eventTypes } = useEventData()
   await init()
+
+  const data = await fetchTypeDistribution()
 
   const keyToName = new Map<string, string>()
   for (const t of eventTypes.value) {
     keyToName.set(t.eventTableIndexCode, t.name)
   }
 
-  const res = await statisticEvents({
-    ...makeStatParams({ maxRows: 100, groupByCols: F_TYPE }),
-  })
-
   const nameToCount = new Map<string, number>()
-  for (const item of res.data) {
-    const cnName = keyToName.get(item.value || item.colName || '') || item.value || item.colName || '未知'
-    nameToCount.set(cnName, (nameToCount.get(cnName) || 0) + (item.count || 0))
+  for (const item of data.categories) {
+    const cnName = keyToName.get(item.name) || item.name
+    nameToCount.set(cnName, (nameToCount.get(cnName) || 0) + item.value)
   }
 
   const items = Array.from(nameToCount.entries())
