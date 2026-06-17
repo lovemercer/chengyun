@@ -1,8 +1,8 @@
 import { ref } from 'vue'
 import PizZip from 'pizzip'
 import { saveAs } from 'file-saver'
-import { generateMockReport } from '../data/mockWeeklyReport'
-import type { WeeklyReportData } from '../data/mockWeeklyReport'
+import { generateMockReport } from '../api/mockWeeklyReport'
+import type { WeeklyReportData } from '../api/mockWeeklyReport'
 
 export function useWeeklyReport() {
   const exporting = ref(false)
