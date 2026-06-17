@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import ExportReportButton from './ExportReportButton.vue'
 
 const currentTime = ref('')
 
@@ -39,8 +40,11 @@ onUnmounted(() => {
         East District AI Intelligent Monitoring Operations Center
       </div>
 
-      <div class="update-time">
-        {{ currentTime }}
+      <div class="header-right">
+        <ExportReportButton />
+        <div class="update-time">
+          {{ currentTime }}
+        </div>
       </div>
 
     </div>
@@ -104,12 +108,18 @@ onUnmounted(() => {
   letter-spacing: 2px;
 }
 
-.update-time {
+.header-right {
   position: absolute;
 
   right: -40%;
-  top: 25%;
+  top: 15%;
 
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.update-time {
   text-align: right;
 
   color: #79e7ff;
