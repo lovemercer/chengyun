@@ -14,9 +14,12 @@ import DetailModal from './DetailModal.vue'
 
 import { useEventData } from '@/composables/useEventData'
 import { useEventQuery } from '@/composables/useEventQuery'
+import { useCameraData } from '@/composables/useCameraData'
+import type { GrowthData } from './left/GrowthAnalysis.vue'
 
 const { init } = useEventData()
 const { fetchKpiStats } = useEventQuery()
+const { preload: preloadCameras } = useCameraData()
 
 interface KpiItem {
   label: string
@@ -27,18 +30,24 @@ interface KpiItem {
 }
 
 const kpis = ref<KpiItem[]>([])
+const growthData = ref<GrowthData>({ today: 0, yesterday: 0, thisWeek: 0, lastWeek: 0, thisMonth: 0, lastMonth: 0 })
+const kpiReady = ref(false)
 
 onMounted(async () => {
+  // 事件类型初始化（必要） + 摄像头预加载（后台，不阻塞）
   await init()
+  preloadCameras() // 不等结果，后台加载，加载完自动刷新视图
   const stats = await fetchKpiStats()
+  growthData.value = stats.growth
   kpis.value = [
-    { label: '事件总数 (累计)', value: stats.total, change: '12.6%', changeType: 'up', changeLabel: '较昨日' },
-    { label: '今日新增事件', value: stats.today, change: '8.3%', changeType: 'down', changeLabel: '较昨日' },
-    { label: '较昨日变化', value: stats.yesterdayChange, change: stats.yesterdayValue, changeType: 'down', changeLabel: '昨日' },
-    { label: '近一周事件数', value: stats.thisWeek, change: stats.thisWeekChange, changeType: 'up', changeLabel: '环比' },
-    { label: '近一月事件数', value: stats.thisMonth, change: stats.thisMonthChange, changeType: 'down', changeLabel: '环比' },
-    { label: '近一年事件数', value: stats.thisYear, change: stats.thisYearChange, changeType: 'up', changeLabel: '同比' },
+    { label: '事件总数 (累计)', value: stats.total },
+    { label: '今日新增事件', value: stats.today, change: stats.todayChange, changeType: stats._todayDir, changeLabel: '较昨日' },
+    { label: '昨日新增事件', value: stats.yesterdayValue, change: stats.yesterdayChange, changeType: stats._yesterdayDir, changeLabel: '较前日' },
+    { label: '近一周事件数', value: stats.thisWeek, change: stats.thisWeekChange, changeType: stats._weekDir, changeLabel: '环比' },
+    { label: '近一月事件数', value: stats.thisMonth, change: stats.thisMonthChange, changeType: stats._monthDir, changeLabel: '环比' },
+    { label: '近一年事件数', value: stats.thisYear, change: stats.thisYearChange, changeType: stats._yearDir, changeLabel: '同比' },
   ]
+  kpiReady.value = true
 })
 </script>
 
@@ -66,7 +75,7 @@ onMounted(async () => {
     </section>
 
     <!-- Main -->
-    <main class="dashboard-main">
+    <main v-if="kpiReady" class="dashboard-main">
 
       <!-- 左侧 -->
       <div class="side-column">
@@ -80,7 +89,7 @@ onMounted(async () => {
         </div>
 
         <div class="panel-item">
-          <GrowthAnalysis />
+          <GrowthAnalysis :data="growthData" />
         </div>
 
       </div>
@@ -184,7 +193,7 @@ onMounted(async () => {
   display: grid;
 
   grid-template-columns:
-    24% 1fr 24%;
+    25% 1fr 25%;
 
   gap: 16px;
 

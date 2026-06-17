@@ -23,13 +23,102 @@ const total = ref(0)
 const categories = ref<CategoryItem[]>([])
 
 const colors = [
-  '#2f7cff',
-  '#25d8f5',
-  '#ffc928',
-  '#ffb000',
-  '#7f63ff',
-  '#9a68ff'
+  '#2F7CFF',
+  '#25D8F5',
+  '#FFC928',
+  '#FF9F43',
+  '#7F63FF',
+  '#9A68FF',
 ]
+
+function getPercent(value: number): string {
+  return total.value > 0 ? ((value / total.value) * 100).toFixed(1) + '%' : '0%'
+}
+
+const renderChart = () => {
+  if (!chartInstance) return
+
+  chartInstance.setOption({
+    backgroundColor: 'transparent',
+    animation: !prefersReducedMotion.value,
+
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: 'rgba(0,20,40,.95)',
+      borderColor: '#00E5FF',
+      borderWidth: 1,
+      textStyle: { color: '#fff' },
+      formatter: (params: any) => `
+        <div>
+          <div>${params.name}</div>
+          <div>数量：${params.value.toLocaleString()}</div>
+          <div>占比：${getPercent(params.value)}</div>
+        </div>
+      `,
+    },
+
+    graphic: [
+      {
+        type: 'text',
+        left: 'center',
+        top: '40%',
+        style: {
+          text: '事件总数',
+          textAlign: 'center',
+          fill: '#8FDFFF',
+          fontSize: 13,
+          fontWeight: 500,
+        },
+      },
+      {
+        type: 'text',
+        left: 'center',
+        top: '50%',
+        style: {
+          text: total.value.toLocaleString(),
+          textAlign: 'center',
+          fill: '#FFFFFF',
+          fontSize: 18,
+          fontWeight: 700,
+        },
+      },
+    ],
+
+    series: [
+      {
+        type: 'pie',
+        radius: ['55%', '82%'],
+        center: ['50%', '50%'],
+        avoidLabelOverlap: false,
+        label: { show: false },
+        labelLine: { show: false },
+        itemStyle: { borderWidth: 0 },
+        emphasis: { scale: true, scaleSize: 6 },
+        data: categories.value.map((item, index) => ({
+          name: item.name,
+          value: item.value,
+          itemStyle: { color: colors[index % colors.length] },
+        })),
+      },
+    ],
+  })
+}
+
+const handleResize = () => chartInstance?.resize()
+
+function handlePieClick(params: any) {
+  openRecords({
+    title: `详情 - ${params.name}`,
+    filterType: params.name,
+  })
+}
+
+function handleLegendClick(item: CategoryItem) {
+  openRecords({
+    title: `详情 - ${item.name}`,
+    filterType: item.name,
+  })
+}
 
 onMounted(async () => {
   const data = await fetchCategoryDistribution()
@@ -39,101 +128,15 @@ onMounted(async () => {
   if (!chartRef.value) return
 
   chartInstance = echarts.init(chartRef.value)
-
-  const option: echarts.EChartsOption = {
-    backgroundColor: 'transparent',
-
-    animation: !prefersReducedMotion.value,
-
-    tooltip: {
-      trigger: 'item',
-      backgroundColor: 'rgba(0,20,40,.95)',
-      borderColor: '#00e5ff',
-      borderWidth: 1,
-      textStyle: {
-        color: '#fff'
-      }
-    },
-
-    graphic: [
-      {
-        type: 'text' as const,
-        left: 'center',
-        top: '42%',
-        style: {
-          text: '事件总数',
-          textAlign: 'center' as const,
-          fill: '#8fdfff',
-          fontSize: 15,
-          fontWeight: 500
-        }
-      },
-      {
-        type: 'text' as const,
-        left: 'center',
-        top: '52%',
-        style: {
-          text: total.value.toLocaleString(),
-          textAlign: 'center' as const,
-          fill: '#ffffff',
-          fontSize: 26,
-          fontWeight: 700
-        }
-      }
-    ],
-
-    series: [
-      {
-        type: 'pie',
-
-        radius: ['65%', '92%'],
-
-        center: ['50%', '50%'],
-
-        avoidLabelOverlap: false,
-
-        label: {
-          show: false
-        },
-
-        labelLine: {
-          show: false
-        },
-
-        itemStyle: {
-          borderWidth: 0
-        },
-
-        data: categories.value.map((item, index) => ({
-          value: item.value,
-          name: item.name,
-          itemStyle: {
-            color: colors[index % colors.length]
-          }
-        }))
-      }
-    ]
-  }
-
-  chartInstance.setOption(option)
-
-  chartInstance.on('click', (params) => {
-    openRecords({
-      title: `详情 - ${params.name}`,
-      filterType: params.name as string
-    })
-  })
-
+  renderChart()
+  chartInstance.on('click', handlePieClick)
   window.addEventListener('resize', handleResize)
 })
-
-const handleResize = () => {
-  chartInstance?.resize()
-}
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
   chartInstance?.dispose()
+  chartInstance = null
 })
 </script>
 
@@ -141,26 +144,24 @@ onUnmounted(() => {
   <DashboardPanel title="事件类型占比">
     <div class="chart-container">
 
+      <!-- 饼图 -->
       <div ref="chartRef" class="chart" />
 
-      <div class="legend-box">
-
-        <div v-for="(item, index) in categories" :key="item.name" class="legend-row">
-          <div class="legend-left">
-
-            <span class="legend-color" :style="{ backgroundColor: colors[index % colors.length] }" />
-
-            <span class="legend-name">
-              {{ item.name }}
-            </span>
-
-          </div>
-
-          <span class="legend-value">
-            {{ total > 0 ? ((item.value / total) * 100).toFixed(1) + '%' : '0%' }}
-          </span>
+      <!-- 自定义图例（CSS 滚动条，无翻页） -->
+      <div class="legend-scroll">
+        <div
+          v-for="(item, index) in categories"
+          :key="item.name"
+          class="legend-row"
+          @click="handleLegendClick(item)"
+        >
+          <span
+            class="legend-dot"
+            :style="{ backgroundColor: colors[index % colors.length] }"
+          />
+          <span class="legend-name">{{ item.name }}</span>
+          <span class="legend-pct">{{ getPercent(item.value) }}</span>
         </div>
-
       </div>
 
     </div>
@@ -171,90 +172,83 @@ onUnmounted(() => {
 .chart-container {
   width: 100%;
   height: 100%;
-
   display: flex;
   align-items: center;
-
-  padding: 0 12px;
+  padding: 0 10px;
   box-sizing: border-box;
 }
 
-/* 饼图区域 */
+/* 饼图 */
 .chart {
-  width: 62%;
-  min-width: 260px;
-
+  width: 46%;
   height: 100%;
+  flex-shrink: 0;
 }
 
-/* 图例区域 */
-.legend-box {
-  width: 38%;
+/* 自定义图例 —— 滚动条 */
+.legend-scroll {
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 4px 8px 8px;
+}
 
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+/* 滚动条美化 */
+.legend-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.legend-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.legend-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, .25);
+  border-radius: 2px;
+}
+.legend-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 229, 255, .45);
 }
 
 /* 每行 */
 .legend-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-
-  height: 34px;
-
-  margin-bottom: 4px;
+  gap: 8px;
+  height: 28px;
+  cursor: pointer;
+  padding: 0 4px;
+  border-radius: 4px;
+  transition: background .15s;
+}
+.legend-row:hover {
+  background: rgba(0, 229, 255, .08);
 }
 
-/* 左侧 */
-.legend-left {
-  display: flex;
-  align-items: center;
-
-  gap: 10px;
-}
-
-/* 色块 */
-.legend-color {
-  width: 12px;
-  height: 12px;
-
-  border-radius: 3px;
-
-
+/* 色点 */
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 
 /* 名称 */
 .legend-name {
+  flex: 1;
   color: #F8FAFC;
-
-  font-size: 14px;
-
+  font-size: 12px;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 百分比 */
-.legend-value {
-  color: #F8FAFC;
-
-  font-size: 15px;
-
-  font-weight: 700;
-}
-
-/* 大屏优化 */
-@media screen and (min-width: 1920px) {
-  .legend-name {
-    font-size: 15px;
-  }
-
-  .legend-value {
-    font-size: 16px;
-  }
-
-  .chart {
-    min-width: 300px;
-  }
+.legend-pct {
+  color: #94A3B8;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+  min-width: 42px;
+  text-align: right;
 }
 </style>

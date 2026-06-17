@@ -19,15 +19,10 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/api': {
-          target: env.VITE_ARTEMIS_GATEWAY || 'https://your-artemis-gateway.com',
+          target: env.VITE_ARTEMIS_GATEWAY || 'https://131.135.1.150:443',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ''),
-          configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq) => {
-              proxyReq.setHeader('x-app-key', env.VITE_APP_KEY || '')
-              proxyReq.setHeader('x-app-secret', env.VITE_APP_SECRET || '')
-            })
-          },
+          secure: false,
+          rewrite: (path) => '/artemis' + path,
         },
       },
     },

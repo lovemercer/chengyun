@@ -13,7 +13,7 @@ const {
 const { fetchDetailRecords } = useEventQuery()
 
 interface EventRecord {
-  id: number
+  id: string
   time: string
   dateStr: string
   type: string
@@ -58,6 +58,7 @@ async function loadLeft() {
   const res = await fetchDetailRecords({
     filterType: leftSide.value.filterType,
     filterPeriod: leftSide.value.filterPeriod,
+    filterWeekday: leftSide.value.filterWeekday,
     pageNo: leftPage.value,
     pageSize,
   })
@@ -69,6 +70,7 @@ async function loadRight() {
   const res = await fetchDetailRecords({
     filterType: rightSide.value.filterType,
     filterPeriod: rightSide.value.filterPeriod,
+    filterWeekday: rightSide.value.filterWeekday,
     pageNo: rightPage.value,
     pageSize,
   })
@@ -174,7 +176,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                   <th class="col-time">时间</th>
                   <th class="col-type">事件类型</th>
                   <th class="col-location">地点</th>
-                  <th class="col-detail">详情</th>
                 </tr>
               </thead>
               <tbody>
@@ -183,7 +184,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                   <td class="col-time">{{ item.time }}</td>
                   <td class="col-type">{{ item.type }}</td>
                   <td class="col-location">{{ item.location }}</td>
-                  <td class="col-detail">{{ item.detail }}</td>
                 </tr>
               </tbody>
             </table>
@@ -218,7 +218,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                       <th class="col-time">时间</th>
                       <th class="col-type">类型</th>
                       <th class="col-location">地点</th>
-                      <th class="col-detail">详情</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -227,7 +226,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                       <td class="col-time">{{ item.time }}</td>
                       <td class="col-type">{{ item.type }}</td>
                       <td class="col-location">{{ item.location }}</td>
-                      <td class="col-detail">{{ item.detail }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -248,7 +246,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                       <th class="col-time">时间</th>
                       <th class="col-type">类型</th>
                       <th class="col-location">地点</th>
-                      <th class="col-detail">详情</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -257,7 +254,6 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
                       <td class="col-time">{{ item.time }}</td>
                       <td class="col-type">{{ item.type }}</td>
                       <td class="col-location">{{ item.location }}</td>
-                      <td class="col-detail">{{ item.detail }}</td>
                     </tr>
                   </tbody>
                 </table>

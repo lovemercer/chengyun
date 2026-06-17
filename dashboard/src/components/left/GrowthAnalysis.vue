@@ -1,47 +1,31 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed } from 'vue'
 import DashboardPanel from '../DashboardPanel.vue'
 import { useDetailModal } from '@/composables/useDetailModal'
-import { useEventQuery } from '@/composables/useEventQuery'
 
-const { openCompare } = useDetailModal()
-const { fetchGrowthAnalysis } = useEventQuery()
-
-interface GrowthRow {
-  label: string
-  v1: number
-  v2: number
-  pct: number
-  dir: 'up' | 'down'
-  left: { title: string }
-  right: { title: string }
+export interface GrowthData {
+  today: number
+  yesterday: number
+  thisWeek: number
+  lastWeek: number
+  thisMonth: number
+  lastMonth: number
 }
 
-const rows = ref<GrowthRow[]>([])
+const props = defineProps<{ data: GrowthData }>()
 
-onMounted(async () => {
-  const data = await fetchGrowthAnalysis()
-  rows.value = [
-    {
-      label: '今日 vs 昨日',
-      v1: data[0].v1, v2: data[0].v2,
-      pct: data[0].pct, dir: data[0].dir,
-      left: { title: '今日' }, right: { title: '昨日' },
-    },
-    {
-      label: '本周 vs 上周',
-      v1: data[1].v1, v2: data[1].v2,
-      pct: data[1].pct, dir: data[1].dir,
-      left: { title: '本周' }, right: { title: '上周' },
-    },
-    {
-      label: '本月 vs 上月',
-      v1: data[2].v1, v2: data[2].v2,
-      pct: data[2].pct, dir: data[2].dir,
-      left: { title: '本月' }, right: { title: '上月' },
-    },
-  ]
-})
+const { openCompare } = useDetailModal()
+
+function calc(v1: number, v2: number) {
+  const pct = v2 > 0 ? Math.abs(((v1 - v2) / v2) * 100) : 0
+  return { pct: Math.round(pct * 100) / 100, dir: (v1 >= v2 ? 'up' : 'down') as 'up' | 'down' }
+}
+
+const rows = computed(() => [
+  { label: '今日 vs 昨日', v1: props.data.today, v2: props.data.yesterday, ...calc(props.data.today, props.data.yesterday), left: { title: '今日', filterPeriod: 'today' }, right: { title: '昨日', filterPeriod: 'yesterday' } },
+  { label: '本周 vs 上周', v1: props.data.thisWeek, v2: props.data.lastWeek, ...calc(props.data.thisWeek, props.data.lastWeek), left: { title: '本周', filterPeriod: 'this_week' }, right: { title: '上周', filterPeriod: 'last_week' } },
+  { label: '本月 vs 上月', v1: props.data.thisMonth, v2: props.data.lastMonth, ...calc(props.data.thisMonth, props.data.lastMonth), left: { title: '本月', filterPeriod: 'this_month' }, right: { title: '上月', filterPeriod: 'last_month' } },
+])
 </script>
 
 <template>
@@ -49,12 +33,8 @@ onMounted(async () => {
 
     <div class="compare-grid">
 
-      <div
-        v-for="item in rows"
-        :key="item.label"
-        class="compare-card"
-        @click="openCompare({ title: `详情 - ${item.label}`, left: item.left, right: item.right })"
-      >
+      <div v-for="item in rows" :key="item.label" class="compare-card"
+        @click="openCompare({ title: `详情 - ${item.label}`, left: item.left, right: item.right })">
         <div class="compare-title">
           {{ item.label }}
         </div>
@@ -62,9 +42,9 @@ onMounted(async () => {
         <div class="compare-value">
           {{ item.v1.toLocaleString() }}
 
-          <span>
-            vs {{ item.v2.toLocaleString() }}
-          </span>
+
+          vs {{ item.v2.toLocaleString() }}
+
         </div>
 
         <div class="compare-rate" :class="item.dir">
@@ -93,7 +73,7 @@ onMounted(async () => {
 .compare-card {
   position: relative;
 
-  padding: 24px 18px;
+  padding: 24px 10px;
 
   display: flex;
   flex-direction: column;
@@ -125,7 +105,7 @@ onMounted(async () => {
 .compare-title {
   color: #94A3B8;
 
-  font-size: 20px;
+  font-size: 16px;
 
   line-height: 1;
 }
@@ -133,10 +113,10 @@ onMounted(async () => {
 .compare-value {
   color: #ffffff;
 
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
 
-  line-height: 1.2;
+  line-height: 1.8;
 }
 
 .compare-value span {
