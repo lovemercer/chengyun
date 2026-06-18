@@ -2,7 +2,6 @@
  * 海康 Artemis 事件库 API 接口函数
  *
  * 类型定义 → src/api/types.ts
- * Mock 数据 → src/data/mockData.ts
  */
 
 import { get, post, request } from './request'

@@ -1,8 +1,8 @@
 import { ref } from 'vue'
 import PizZip from 'pizzip'
 import { saveAs } from 'file-saver'
-import { generateMockReport } from '../api/mockWeeklyReport'
-import type { WeeklyReportData } from '../api/mockWeeklyReport'
+import type { WeeklyReportData } from '@/api/weeklyReport'
+import { fetchWeeklyReportData } from './weeklyReportData'
 
 export function useWeeklyReport() {
   const exporting = ref(false)
@@ -10,12 +10,12 @@ export function useWeeklyReport() {
   /**
    * 加载模板文件并填充数据，触发浏览器下载。
    * 直接使用 XML 替换方案，绕过 docxtemplater 对模板格式的严格要求。
-   * @param data  可传入自定义数据；缺省时使用 mock 数据。
+   * @param data  可传入自定义数据；缺省时从真实接口聚合周报数据。
    */
   async function exportReport(data?: WeeklyReportData) {
     exporting.value = true
     try {
-      const reportData = data ?? generateMockReport()
+      const reportData = data ?? await fetchWeeklyReportData()
       console.log('[周报] 数据准备完成, keys:', Object.keys(reportData))
 
       // 1. 加载模板
@@ -51,25 +51,7 @@ function manualExport(data: WeeklyReportData, templateBuffer: ArrayBuffer) {
   // ── 第 2 步：先展开表格循环 ──
   // 注意：必须先处理循环，因为 {accuracy} 同时存在于循环内外，
   // 先做简单替换会把循环内的 {accuracy} 也替换掉
-  const rowMatch = xml.match(/<w:tr[^>]*>([\s\S]*?\{#algorithms\}[\s\S]*?\{\/algorithms\}[\s\S]*?)<\/w:tr>/)
-  if (rowMatch) {
-    const rowTemplate = rowMatch[1]
-      .replace(/\{#algorithms\}/g, '')
-      .replace(/\{\/algorithms\}/g, '')
-
-    const expandedRows = data.algorithms.map(algo => {
-      let row = rowTemplate
-      row = row.replace(/\{seq\}/g, String(algo.seq))
-      row = row.replace(/\{type\}/g, escapeXml(algo.type))
-      row = row.replace(/\{cameras\}/g, String(algo.cameras))
-      row = row.replace(/\{events\}/g, String(algo.events))
-      row = row.replace(/\{accuracy\}/g, escapeXml(algo.accuracy))
-      row = row.replace(/\{remark\}/g, escapeXml(algo.remark))
-      return `<w:tr>${row}</w:tr>`
-    }).join('')
-
-    xml = xml.replace(rowMatch[0], expandedRows)
-  }
+  xml = expandAlgorithmRows(xml, data.algorithms)
 
   // ── 第 3 步：简单标签替换（循环已展开，不会误伤） ──
   const textReplacements: Record<string, string | number> = {
@@ -91,8 +73,20 @@ function manualExport(data: WeeklyReportData, templateBuffer: ArrayBuffer) {
     nextWeekPlan: data.nextWeekPlan,
   }
 
+  xml = replacePercentPlaceholder(xml, 'accuracy', data.accuracy)
+  xml = replacePercentPlaceholder(xml, 'overallAccuracy', data.overallAccuracy)
+  xml = replacePercentPlaceholder(xml, 'accuracyChange', data.accuracyChange)
+  xml = replaceUnitPlaceholder(xml, 'newCameras', data.newCameras, '路')
+  xml = replaceUnitPlaceholder(xml, 'totalCameras', data.totalCameras, '路')
+  xml = replaceUnitPlaceholder(xml, 'falsePositives', data.falsePositives, '起')
+  xml = replaceUnitPlaceholder(xml, 'falseNegatives', data.falseNegatives, '起')
+
   for (const [key, val] of Object.entries(textReplacements)) {
     xml = xml.replace(new RegExp(`\\{${key}\\}`, 'g'), escapeXml(String(val)))
+  }
+
+  if (!isNumericText(String(data.overallAccuracy).trim())) {
+    xml = xml.replace(/整体运行状态良好/g, '相关指标正在按流程核验')
   }
 
   // problems 字段需要保留换行为 <w:br/>（XML 标签，不能转义）
@@ -168,4 +162,60 @@ function escapeXml(s: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
+}
+
+function expandAlgorithmRows(xml: string, algorithms: WeeklyReportData['algorithms']): string {
+  const rowRegex = /<w:tr\b[^>]*>[\s\S]*?<\/w:tr>/g
+  const rowMatch = Array.from(xml.matchAll(rowRegex))
+    .find(match => match[0].includes('{#algorithms}') && match[0].includes('{/algorithms}'))
+
+  if (!rowMatch) {
+    throw new Error('模板缺少 algorithms 表格循环占位符')
+  }
+
+  const fullRow = rowMatch[0]
+  const openingTag = fullRow.match(/^<w:tr\b[^>]*>/)?.[0] ?? '<w:tr>'
+  const rowTemplate = fullRow
+    .slice(openingTag.length, -'</w:tr>'.length)
+    .replace(/\{#algorithms\}/g, '')
+    .replace(/\{\/algorithms\}/g, '')
+
+  const expandedRows = algorithms.map(algo => {
+    let row = rowTemplate
+    row = row.replace(/\{seq\}/g, String(algo.seq))
+    row = row.replace(/\{type\}/g, escapeXml(algo.type))
+    row = row.replace(/\{cameras\}/g, escapeXml(String(algo.cameras)))
+    row = row.replace(/\{events\}/g, String(algo.events))
+    row = row.replace(/\{accuracy\}/g, escapeXml(algo.accuracy))
+    row = row.replace(/\{remark\}/g, escapeXml(algo.remark))
+    return `${openingTag}${row}</w:tr>`
+  }).join('')
+
+  return xml.replace(fullRow, expandedRows)
+}
+
+function replacePercentPlaceholder(xml: string, key: string, value: string): string {
+  const rawValue = value.trim()
+  const replacement = rawValue.endsWith('%')
+    ? rawValue
+    : isNumericText(rawValue)
+      ? `${rawValue}%`
+      : rawValue
+
+  return xml.replace(new RegExp(`\\{${key}\\}%`, 'g'), escapeXml(replacement))
+}
+
+function replaceUnitPlaceholder(
+  xml: string,
+  key: string,
+  value: string | number,
+  unit: string,
+): string {
+  const rawValue = String(value).trim()
+  const replacement = isNumericText(rawValue) ? `${rawValue}${unit}` : rawValue
+  return xml.replace(new RegExp(`\\{${key}\\}${unit}`, 'g'), escapeXml(replacement))
+}
+
+function isNumericText(value: string): boolean {
+  return /^-?\d+(\.\d+)?$/.test(value)
 }
